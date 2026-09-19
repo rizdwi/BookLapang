@@ -35,7 +35,7 @@ class BookingController extends Controller
         // Aturan Bisnis: User tidak bisa pesan lebih dari 2 lapangan berbeda jika belum payment (status pending)
         $pendingDistinctCourtsCount = Booking::where('user_id', Auth::id())
             ->where('status', 'pending')
-            ->distinct('lapangan_id')
+            ->distinct()
             ->count('lapangan_id');
 
         $alreadyHasPendingForThisCourt = Booking::where('user_id', Auth::id())
@@ -45,7 +45,7 @@ class BookingController extends Controller
 
         if ($pendingDistinctCourtsCount >= 2 && !$alreadyHasPendingForThisCourt) {
             return redirect()->route('customer.dashboard')
-                ->with('error', 'Batas Pemesanan: Anda tidak dapat memesan lebih dari 2 lapangan berbeda sebelum menyelesaikan pembayaran pada pesanan yang masih berstatus menunggu.');
+                ->with('error', 'Anda memiliki pesanan belum dibayar di ' . $pendingDistinctCourtsCount . ' lapangan berbeda. Selesaikan pembayaran atau batalkan pesanan sebelum memesan lapangan lain.');
         }
 
         return view('booking.create', compact('slot', 'lapangan'));
@@ -68,7 +68,7 @@ class BookingController extends Controller
             // Validasi ulang batas 2 lapangan berbeda pending
             $pendingDistinctCourtsCount = Booking::where('user_id', Auth::id())
                 ->where('status', 'pending')
-                ->distinct('lapangan_id')
+                ->distinct()
                 ->count('lapangan_id');
 
             $alreadyHasPendingForThisCourt = Booking::where('user_id', Auth::id())
@@ -79,7 +79,7 @@ class BookingController extends Controller
             if ($pendingDistinctCourtsCount >= 2 && !$alreadyHasPendingForThisCourt) {
                 DB::rollBack();
                 return redirect()->route('customer.dashboard')
-                    ->with('error', 'Batas Pemesanan: Anda tidak dapat memesan lebih dari 2 lapangan berbeda sebelum menyelesaikan pembayaran pada pesanan yang masih berstatus menunggu.');
+                    ->with('error', 'Anda memiliki pesanan belum dibayar di ' . $pendingDistinctCourtsCount . ' lapangan berbeda. Selesaikan pembayaran atau batalkan pesanan sebelum memesan lapangan lain.');
             }
 
             // Cek apakah slot masih tersedia
@@ -124,12 +124,11 @@ class BookingController extends Controller
             ProcessBookingNotificationJob::dispatch($booking);
 
             return redirect()->route('customer.dashboard')
-                ->with('success', 'Booking berhasil dibuat! Silakan lakukan pembayaran sesuai QRIS atau nomor Virtual Account tertera.');
+                ->with('success', 'Booking berhasil dibuat! Silakan lakukan pembayaran sesuai metode yang dipilih.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Terjadi kesalahan sistem saat memproses booking: ' . $e->getMessage());
+            return redirect()->route('customer.dashboard')
+                ->with('error', 'Terjadi kesalahan saat memproses booking. Silakan coba lagi.');
         }
     }
 
