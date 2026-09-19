@@ -22,6 +22,15 @@ $app = Application::configure(basePath: dirname(__DIR__))
 // Di lingkungan Vercel Serverless (Read-Only Root Filesystem), alihkan storage ke /tmp
 if (isset($_SERVER['VERCEL']) || isset($_ENV['VERCEL']) || getenv('VERCEL')) {
     $app->useStoragePath('/tmp/storage');
+    $app->booted(function ($app) {
+        config([
+            'database.default' => 'sqlite',
+            'database.connections.sqlite.database' => '/tmp/database.sqlite',
+            'session.driver' => 'cookie',
+            'session.lifetime' => 120,
+            'cache.default' => 'array',
+        ]);
+    });
 }
 
 return $app;

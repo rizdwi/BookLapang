@@ -40,9 +40,16 @@ putenv('SESSION_DRIVER=cookie');
 putenv('SESSION_LIFETIME=120');
 putenv('CACHE_STORE=array');
 
+$_ENV['VERCEL'] = '1';
+$_ENV['DB_CONNECTION'] = 'sqlite';
+$_ENV['DB_DATABASE'] = $targetDb;
 $_ENV['SESSION_DRIVER'] = 'cookie';
 $_ENV['SESSION_LIFETIME'] = '120';
 $_ENV['CACHE_STORE'] = 'array';
+
+$_SERVER['VERCEL'] = '1';
+$_SERVER['DB_CONNECTION'] = 'sqlite';
+$_SERVER['DB_DATABASE'] = $targetDb;
 $_SERVER['SESSION_DRIVER'] = 'cookie';
 $_SERVER['SESSION_LIFETIME'] = '120';
 $_SERVER['CACHE_STORE'] = 'array';

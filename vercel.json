@@ -3,7 +3,8 @@
   "framework": null,
   "functions": {
     "api/index.php": {
-      "runtime": "vercel-php@0.7.3"
+      "runtime": "vercel-php@0.7.3",
+      "includeFiles": "database/**"
     }
   },
   "routes": [
@@ -27,6 +28,8 @@
     "CACHE_STORE": "array",
     "SESSION_DRIVER": "cookie",
     "SESSION_LIFETIME": "120",
+    "DB_CONNECTION": "sqlite",
+    "DB_DATABASE": "/tmp/database.sqlite",
     "LOG_CHANNEL": "stderr"
   }
 }
