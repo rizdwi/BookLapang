@@ -24,6 +24,8 @@ if (isset($_SERVER['VERCEL']) || isset($_ENV['VERCEL']) || getenv('VERCEL')) {
     $app->useStoragePath('/tmp/storage');
     $app->booted(function ($app) {
         config([
+            'app.name' => 'BookLapang',
+            'app.url' => 'https://book-lapang.vercel.app',
             'database.default' => 'sqlite',
             'database.connections.sqlite.database' => '/tmp/database.sqlite',
             'session.driver' => 'cookie',

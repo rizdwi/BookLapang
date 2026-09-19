@@ -1,10 +1,10 @@
 <?php
 
 return [
-    'name' => env('APP_NAME', 'BookLapang'),
-    'env' => env('APP_ENV', 'production'),
+    'name' => env('APP_NAME') ?: 'BookLapang',
+    'env' => env('APP_ENV') ?: 'production',
     'debug' => (bool) env('APP_DEBUG', false),
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL') ?: 'https://book-lapang.vercel.app',
     'asset_url' => env('ASSET_URL'),
     'timezone' => 'Asia/Jakarta',
     'locale' => 'id',
