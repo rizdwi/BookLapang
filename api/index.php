@@ -36,10 +36,14 @@ putenv('APP_ROUTES_CACHE=' . $tmp . '/bootstrap/cache/routes.php');
 putenv('APP_SERVICES_CACHE=' . $tmp . '/bootstrap/cache/services.php');
 putenv('DB_CONNECTION=sqlite');
 putenv('DB_DATABASE=' . $targetDb);
+putenv('APP_NAME=BookLapang');
+putenv('APP_URL=https://book-lapang.vercel.app');
 putenv('SESSION_DRIVER=cookie');
 putenv('SESSION_LIFETIME=120');
 putenv('CACHE_STORE=array');
 
+$_ENV['APP_NAME'] = 'BookLapang';
+$_ENV['APP_URL'] = 'https://book-lapang.vercel.app';
 $_ENV['VERCEL'] = '1';
 $_ENV['DB_CONNECTION'] = 'sqlite';
 $_ENV['DB_DATABASE'] = $targetDb;

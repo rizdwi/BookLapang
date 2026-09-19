@@ -22,6 +22,8 @@
     }
   ],
   "env": {
+    "APP_NAME": "BookLapang",
+    "APP_URL": "https://book-lapang.vercel.app",
     "APP_ENV": "production",
     "APP_DEBUG": "true",
     "APP_KEY": "base64:PF0TuxyMcBeuawZO8dLqA4agIUJQTDmb6xiRPVVAomY=",
