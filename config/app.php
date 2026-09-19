@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Support\Facades\Facade;
-
 return [
     'name' => env('APP_NAME', 'BookLapang'),
     'env' => env('APP_ENV', 'production'),
@@ -17,10 +15,4 @@ return [
     'maintenance' => [
         'driver' => 'file',
     ],
-    'providers' => Facade::defaultProviders()->merge([
-        App\Providers\AppServiceProvider::class,
-    ])->toArray(),
-    'aliases' => Facade::defaultAliases()->merge([
-        // 'Example' => App\Facades\Example::class,
-    ])->toArray(),
 ];

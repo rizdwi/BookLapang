@@ -1,86 +1,95 @@
-# BookLapang
+# BookLapang - Sistem Reservasi Lapangan Olahraga
 
-Sistem booking lapangan olahraga berbasis web, dibangun dengan Laravel 11.
+Aplikasi web pemesanan lapangan olahraga berbasis fullstack dengan arsitektur **Laravel 11**, dirancang untuk menangani konkurensi tinggi, proteksi pemesanan bentrok (*race-condition safe*), serta manajemen alur transaksi multi-peran (Admin & Pelanggan).
 
-Aplikasi ini mendukung dua peran pengguna (admin dan pelanggan), pencegahan booking ganda menggunakan database transaction, serta manajemen jadwal dan lapangan secara lengkap.
+---
+
+## Fitur Utama
+
+### 1. Transaksi & Logika Bisnis
+- **Anti-Bentrok (Concurrency-Safe):** Menggunakan `DB::transaction()` dan pesimistik locking `lockForUpdate()` pada slot jadwal untuk mencegah pemesanan ganda di detik yang sama.
+- **Proteksi Pembatasan Reservasi:** Pengguna dibatasi maksimal memiliki pesanan belum lunas (*status pending*) pada $\le 2$ lapangan berbeda. Sistem secara otomatis menolak pembuatan pesanan pada lapangan ke-3 sebelum pembayaran sebelumnya diselesaikan atau dibatalkan.
+- **Visualisasi Pembayaran Interaktif:**
+  - **QRIS Standar Nasional:** Menampilkan QR Code dinamis resmi, batas waktu pembayaran 15 menit, dan total tagihan instan.
+  - **BCA Virtual Account:** Menampilkan nomor VA terformat (`80777` + nomor ponsel), tombol salin nomor rekening satu klik, dan panduan transfer m-BCA/ATM.
+  - **Dasbor Pembayaran:** Pelanggan dapat membuka kembali barcode QRIS atau nomor VA kapan saja melalui tombol *Bayar Sekarang* di dasbor.
+- **Pembatalan Mandiri:** Pelanggan dapat membatalkan pesanan yang masih berstatus menunggu (*pending*), yang secara otomatis membuka kembali ketersediaan slot jadwal secara real-time.
+
+### 2. Arsitektur Performa & Skalabilitas (Enterprise Ready)
+- **Rate Limiting:** Throttle terdistribusi untuk membatasi akses publik (60 req/min) dan mencegah spam brute-force checkout (10 req/min).
+- **In-Memory Caching:** Caching katalog lapangan aktif via Facade `Cache` dengan *automatic cache invalidation* saat admin memperbarui data lapangan.
+- **Database Composite Indexing:** Indeks gabungan pada `(user_id, status)`, `(jadwal_slot_id, status)`, dan `(lapangan_id, tanggal, jam_mulai)` untuk eksekusi query sub-milidetik.
+- **Asynchronous Task Queue:** Pemrosesan notifikasi dan pembuatan invoice tiket melalui background job (`ProcessBookingNotificationJob`) untuk menjaga *response time* HTTP tetap cepat.
+- **Dokumentasi Skalabilitas Lengkap:** Panduan arsitektur produksi (*High Availability, Redis Cluster, Kafka/RabbitMQ, Connection Pooling, APM Monitoring*) tersedia di [ARCHITECTURE.md](ARCHITECTURE.md).
+
+---
 
 ## Tech Stack
 
-- **Backend:** Laravel 11 (PHP 8.2+)
-- **Frontend:** Blade Templates + Tailwind CSS (CDN)
-- **Database:** SQLite (default, bisa diganti MySQL)
-- **Auth:** Laravel Breeze
-- **Interaktivitas:** Alpine.js (CDN)
+- **Backend:** PHP 8.2+, Laravel 11 Framework
+- **Frontend:** Blade Templates, Tailwind CSS (CDN), Alpine.js (Reaktivitas UI)
+- **Database:** SQLite (Lokal) / MySQL Ready (Produksi)
+- **Auth & Keamanan:** Role-Based Access Control (Admin vs Customer), CSRF Protection, Hash Bcrypt
 
-## Fitur
+---
 
-| Fitur | Keterangan |
-|---|---|
-| Multi-role auth | Admin dan pelanggan dengan akses berbeda |
-| CRUD Lapangan | Tambah, edit, hapus lapangan olahraga (admin) |
-| Jadwal & Slot | Generate slot per jam untuk tiap lapangan (admin) |
-| Booking | Pelanggan pilih slot, sistem cek bentrokan via DB transaction |
-| Dashboard Admin | Statistik booking, pendapatan, daftar booking terbaru |
-| Riwayat Booking | Pelanggan lihat semua booking beserta status |
-| Status Booking | Pending, Confirmed, Done, Cancelled |
-| Responsif | Tampilan mobile-friendly |
-
-## Struktur Database
+## Struktur Basis Data
 
 ```
 users (id, name, email, password, role, phone)
   |
-  +-- bookings (id, user_id, lapangan_id, jadwal_slot_id, tanggal, jam, total_harga, status)
+  +-- bookings (id, user_id, lapangan_id, jadwal_slot_id, tanggal_booking, jam_mulai, jam_selesai, total_harga, status, metode_pembayaran, catatan)
         |
 lapangan (id, nama, tipe, deskripsi, harga_per_jam, foto, alamat, aktif)
   |
   +-- jadwal_slots (id, lapangan_id, tanggal, jam_mulai, jam_selesai, tersedia)
 ```
 
-## Cara Menjalankan
+---
+
+## Cara Menjalankan Secara Lokal
 
 ### Prasyarat
 - PHP 8.2+
 - Composer
-- Node.js (untuk asset build, opsional karena pakai CDN)
+- Git
 
-### Langkah Install
-
+### Langkah Instalasi
 ```bash
-# 1. Clone repo
+# 1. Clone repositori
 git clone https://github.com/rizdwi/BookLapang.git
 cd BookLapang
 
-# 2. Install dependencies
+# 2. Install dependensi
 composer install
 
-# 3. Setup environment
+# 3. Konfigurasi environment
 cp .env.example .env
 php artisan key:generate
 
-# 4. Buat database SQLite
+# 4. Buat file SQLite & jalankan migrasi seeder
 touch database/database.sqlite
-
-# 5. Jalankan migrasi dan seeder
 php artisan migrate --seed
 
-# 6. Jalankan server
+# 5. Buat tautan berkas foto
+php artisan storage:link
+
+# 6. Jalankan server lokal
 php artisan serve
 ```
 
-Buka `http://localhost:8000` di browser.
+Buka peramban di `http://127.0.0.1:8000`.
 
-### Akun Demo (dari Seeder)
+### Akun Uji Coba
 
-| Role | Email | Password |
-|---|---|---|
-| Admin | admin@booklapang.com | password |
-| Customer | budi@example.com | password |
+| Peran | Email | Kata Sandi | Akses |
+|---|---|---|---|
+| **Admin** | `admin@booklapang.com` | `password` | Kelola Lapangan, Generate Jadwal Massal, Approval Transaksi, Pantau Omset |
+| **Pelanggan 1** | `budi@example.com` | `password` | Pemesanan Lapangan, Pembayaran QRIS/VA, Dasbor Riwayat |
+| **Pelanggan 2** | `dwi@example.com` | `password` | Uji coba simulasi multi-pengguna |
 
-## Screenshot
+---
 
-[REAL DATA: tambahkan screenshot setelah aplikasi berjalan]
+## Lisensi & Hak Cipta
 
-## Lisensi
-
-Project portofolio oleh Rizki Dwi Sandy.
+Dikembangkan oleh **Rizki Dwi Sandy** sebagai karya portofolio mandiri untuk posisi *Junior Fullstack Web Developer*.

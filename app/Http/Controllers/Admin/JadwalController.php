@@ -5,72 +5,161 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\JadwalSlot;
 use App\Models\Lapangan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class JadwalController extends Controller
 {
-    public function index(Lapangan $lapangan)
+    /**
+     * Halaman kelola jadwal per-lapangan
+     */
+    public function index(Request $request, Lapangan $lapangan)
     {
-        $jadwalSlots = $lapangan->jadwalSlots()->orderBy('tanggal', 'desc')->orderBy('jam_mulai')->get();
-        return view('admin.jadwal.index', compact('lapangan', 'jadwalSlots'));
+        return redirect()->route('admin.jadwal.index', ['lapangan_id' => $lapangan->id]);
     }
 
+    /**
+     * Halaman kelola jadwal global (semua lapangan)
+     */
+    public function all(Request $request)
+    {
+        $lapanganList = Lapangan::aktif()->get();
+        $selectedLapanganId = $request->get('lapangan_id', $lapanganList->first()->id ?? null);
+        $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
+
+        $query = JadwalSlot::with('lapangan')->orderBy('tanggal', 'asc')->orderBy('jam_mulai', 'asc');
+
+        if ($selectedLapanganId) {
+            $query->where('lapangan_id', $selectedLapanganId);
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal', $selectedDate);
+        }
+
+        $jadwal = $query->paginate(25)->withQueryString();
+
+        return view('admin.jadwal.index', compact('lapanganList', 'selectedLapanganId', 'selectedDate', 'jadwal'));
+    }
+
+    /**
+     * Generate slot untuk satu lapangan tertentu
+     */
     public function generate(Request $request, Lapangan $lapangan)
     {
         $request->validate([
-            'tanggal' => 'required|date|after_or_equal:today',
+            'tanggal' => 'required|date',
             'jam_mulai' => 'required|date_format:H:i',
             'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
-            'durasi' => 'required|integer|min:30', // dalam menit
+            'durasi' => 'required|integer|min:30', // menit
         ]);
 
-        $tanggal = $request->tanggal;
-        $mulai = \Carbon\Carbon::createFromFormat('H:i', $request->jam_mulai);
-        $selesai = \Carbon\Carbon::createFromFormat('H:i', $request->jam_selesai);
-        $durasi = $request->durasi;
+        $count = $this->createSlots(
+            $lapangan->id,
+            $request->tanggal,
+            $request->jam_mulai,
+            $request->jam_selesai,
+            $request->durasi
+        );
 
+        return redirect()->back()
+            ->with('success', "Berhasil membuat {$count} slot jadwal untuk {$lapangan->nama}.");
+    }
+
+    /**
+     * Generate slot massal dengan rentang tanggal
+     */
+    public function generateBulk(Request $request)
+    {
+        $request->validate([
+            'lapangan_id' => 'required|exists:lapangan,id',
+            'tanggal_mulai' => 'required|date',
+            'tanggal_selesai' => 'required|date|after_or_equal:tanggal_mulai',
+            'jam_mulai' => 'nullable|date_format:H:i',
+            'jam_selesai' => 'nullable|date_format:H:i',
+            'durasi' => 'nullable|integer|min:30',
+        ]);
+
+        $lapangan = Lapangan::findOrFail($request->lapangan_id);
+        $startDate = Carbon::parse($request->tanggal_mulai);
+        $endDate = Carbon::parse($request->tanggal_selesai);
+
+        $jamMulai = $request->get('jam_mulai', '08:00');
+        $jamSelesai = $request->get('jam_selesai', '22:00');
+        $durasi = $request->get('durasi', 60);
+
+        $totalCount = 0;
+
+        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+            $totalCount += $this->createSlots(
+                $lapangan->id,
+                $date->format('Y-m-d'),
+                $jamMulai,
+                $jamSelesai,
+                $durasi
+            );
+        }
+
+        return redirect()->back()
+            ->with('success', "Berhasil men-generate total {$totalCount} slot jadwal untuk {$lapangan->nama}.");
+    }
+
+    /**
+     * Helper privat pembuatan slot
+     */
+    private function createSlots($lapanganId, $tanggal, $jamMulaiStr, $jamSelesaiStr, $durasiMenit)
+    {
+        $mulai = Carbon::createFromFormat('H:i', $jamMulaiStr);
+        $selesai = Carbon::createFromFormat('H:i', $jamSelesaiStr);
         $count = 0;
-        
+
         while ($mulai < $selesai) {
-            $slotSelesai = (clone $mulai)->addMinutes($durasi);
-            
+            $slotSelesai = (clone $mulai)->addMinutes($durasiMenit);
             if ($slotSelesai > $selesai) {
                 break;
             }
 
-            // Hindari duplikat
-            $exists = JadwalSlot::where('lapangan_id', $lapangan->id)
+            $mulaiFormatted = $mulai->format('H:i:s');
+            $selesaiFormatted = $slotSelesai->format('H:i:s');
+
+            $exists = JadwalSlot::where('lapangan_id', $lapanganId)
                 ->where('tanggal', $tanggal)
-                ->where('jam_mulai', $mulai->format('H:i:s'))
+                ->where('jam_mulai', $mulaiFormatted)
                 ->exists();
 
             if (!$exists) {
                 JadwalSlot::create([
-                    'lapangan_id' => $lapangan->id,
+                    'lapangan_id' => $lapanganId,
                     'tanggal' => $tanggal,
-                    'jam_mulai' => $mulai->format('H:i:s'),
-                    'jam_selesai' => $slotSelesai->format('H:i:s'),
+                    'jam_mulai' => $mulaiFormatted,
+                    'jam_selesai' => $selesaiFormatted,
                     'tersedia' => true,
                 ]);
                 $count++;
             }
 
-            $mulai->addMinutes($durasi);
+            $mulai->addMinutes($durasiMenit);
         }
 
-        return redirect()->route('admin.lapangan.jadwal.index', $lapangan->id)
-            ->with('success', "Berhasil membuat {$count} slot jadwal.");
+        return $count;
     }
 
+    /**
+     * Toggle status ketersediaan slot (Buka / Tutup manual)
+     */
     public function toggle(JadwalSlot $slot)
     {
         $slot->update(['tersedia' => !$slot->tersedia]);
-        return redirect()->back()->with('success', 'Status ketersediaan jadwal diubah.');
+        $statusText = $slot->tersedia ? 'dibuka kembali' : 'ditutup manual';
+        return redirect()->back()->with('success', "Slot jadwal {$slot->jam_mulai} {$statusText}.");
     }
-    
+
+    /**
+     * Hapus slot jadwal
+     */
     public function destroy(JadwalSlot $slot)
     {
         $slot->delete();
-        return redirect()->back()->with('success', 'Jadwal berhasil dihapus.');
+        return redirect()->back()->with('success', 'Jadwal slot berhasil dihapus.');
     }
 }

@@ -2,35 +2,52 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\JadwalSlot;
 use App\Models\Lapangan;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class PublicController extends Controller
 {
     /**
-     * Tampilkan halaman utama dengan daftar lapangan yang aktif.
+     * Tampilkan halaman utama dengan daftar lapangan aktif dan in-memory caching.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $lapangan = Lapangan::aktif()->latest()->get();
-        
-        return view('welcome', compact('lapangan'));
+        $tipeAktif = $request->get('tipe', 'semua');
+        $cacheKey = 'catalog_lapangan_' . $tipeAktif;
+
+        // In-Memory Caching (TTL: 5 menit / 300 detik) untuk respon instan
+        $lapangan = Cache::remember($cacheKey, 300, function () use ($request) {
+            $query = Lapangan::aktif();
+
+            if ($request->filled('tipe')) {
+                $query->where('tipe', $request->tipe);
+            }
+
+            return $query->latest()->get();
+        });
+
+        return view('public.index', compact('lapangan', 'tipeAktif'));
     }
 
     /**
-     * Tampilkan detail lapangan beserta slot jadwal yang tersedia.
+     * Tampilkan detail lapangan beserta slot jadwal untuk tanggal yang dipilih.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $lapangan = Lapangan::aktif()->with(['jadwalSlots' => function($query) {
-            $query->tersedia()->where('tanggal', '>=', now()->toDateString())->orderBy('tanggal')->orderBy('jam_mulai');
-        }])->findOrFail($id);
-        
-        // Mengelompokkan slot berdasarkan tanggal agar mudah ditampilkan di UI
-        $jadwalPerTanggal = $lapangan->jadwalSlots->groupBy(function ($slot) {
-            return $slot->tanggal->format('Y-m-d');
-        });
+        $lapangan = Lapangan::aktif()->findOrFail($id);
 
-        return view('lapangan.show', compact('lapangan', 'jadwalPerTanggal'));
+        // Tanggal yang dipilih (default hari ini)
+        $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
+
+        // Ambil semua slot pada tanggal tersebut (baik yang tersedia maupun terisi)
+        $jadwal_slots = JadwalSlot::where('lapangan_id', $lapangan->id)
+            ->whereDate('tanggal', $selectedDate)
+            ->orderBy('jam_mulai')
+            ->get();
+
+        return view('public.show', compact('lapangan', 'jadwal_slots', 'selectedDate'));
     }
 }

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->time('jam_selesai');
             $table->integer('total_harga');
             $table->enum('status', ['pending', 'confirmed', 'done', 'cancelled'])->default('pending');
+            $table->string('metode_pembayaran')->default('qris')->nullable();
             $table->text('catatan')->nullable();
             $table->timestamps();
         });

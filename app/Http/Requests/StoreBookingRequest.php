@@ -25,6 +25,7 @@ class StoreBookingRequest extends FormRequest
         return [
             'lapangan_id' => ['required', 'exists:lapangan,id'],
             'jadwal_slot_id' => ['required', 'exists:jadwal_slots,id'],
+            'metode_pembayaran' => ['nullable', 'string', 'in:transfer_bca,transfer_mandiri,qris,cash'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ];
     }

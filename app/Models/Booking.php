@@ -20,6 +20,7 @@ class Booking extends Model
         'jam_selesai',
         'total_harga',
         'status',
+        'metode_pembayaran',
         'catatan',
     ];
 

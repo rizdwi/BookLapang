@@ -6,12 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateBookingStatusRequest;
 use App\Models\Booking;
 use App\Models\JadwalSlot;
+use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $bookings = Booking::with(['user', 'lapangan'])->latest()->get();
+        $query = Booking::with(['user', 'lapangan', 'jadwalSlot'])->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        $bookings = $query->paginate(15)->withQueryString();
+
         return view('admin.booking.index', compact('bookings'));
     }
 
@@ -24,14 +32,18 @@ class BookingController extends Controller
 
         // Jika dibatalkan, kembalikan slot jadwal menjadi tersedia
         if ($newStatus === 'cancelled' && $oldStatus !== 'cancelled') {
-            JadwalSlot::where('id', $booking->jadwal_slot_id)->update(['tersedia' => true]);
+            if ($booking->jadwal_slot_id) {
+                JadwalSlot::where('id', $booking->jadwal_slot_id)->update(['tersedia' => true]);
+            }
         }
 
-        // Jika sebelumnya dibatalkan namun diubah menjadi pending/confirmed, set slot tidak tersedia
-        if ($oldStatus === 'cancelled' && in_array($newStatus, ['pending', 'confirmed'])) {
-             JadwalSlot::where('id', $booking->jadwal_slot_id)->update(['tersedia' => false]);
+        // Jika sebelumnya dibatalkan namun diubah menjadi pending/confirmed/done, set slot tidak tersedia
+        if ($oldStatus === 'cancelled' && in_array($newStatus, ['pending', 'confirmed', 'done'])) {
+            if ($booking->jadwal_slot_id) {
+                JadwalSlot::where('id', $booking->jadwal_slot_id)->update(['tersedia' => false]);
+            }
         }
 
-        return redirect()->back()->with('success', 'Status booking berhasil diperbarui.');
+        return redirect()->back()->with('success', "Status booking #{$booking->id} berhasil diperbarui menjadi {$newStatus}.");
     }
 }

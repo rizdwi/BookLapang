@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLapanganRequest;
 use App\Models\Lapangan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 class LapanganController extends Controller
@@ -24,7 +25,6 @@ class LapanganController extends Controller
     public function store(StoreLapanganRequest $request)
     {
         $data = $request->validated();
-        
         $data['aktif'] = $request->has('aktif') ? true : false;
 
         if ($request->hasFile('foto')) {
@@ -33,6 +33,8 @@ class LapanganController extends Controller
         }
 
         Lapangan::create($data);
+
+        $this->invalidateCatalogCache();
 
         return redirect()->route('admin.lapangan.index')->with('success', 'Lapangan berhasil ditambahkan.');
     }
@@ -48,7 +50,6 @@ class LapanganController extends Controller
         $data['aktif'] = $request->has('aktif') ? true : false;
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
             if ($lapangan->foto && Storage::disk('public')->exists($lapangan->foto)) {
                 Storage::disk('public')->delete($lapangan->foto);
             }
@@ -57,6 +58,8 @@ class LapanganController extends Controller
         }
 
         $lapangan->update($data);
+
+        $this->invalidateCatalogCache();
 
         return redirect()->route('admin.lapangan.index')->with('success', 'Lapangan berhasil diperbarui.');
     }
@@ -69,6 +72,19 @@ class LapanganController extends Controller
         
         $lapangan->delete();
 
+        $this->invalidateCatalogCache();
+
         return redirect()->route('admin.lapangan.index')->with('success', 'Lapangan berhasil dihapus.');
+    }
+
+    /**
+     * Invalidate catalog cache to maintain cache consistency
+     */
+    private function invalidateCatalogCache()
+    {
+        $categories = ['semua', 'futsal', 'badminton', 'basket', 'tenis', 'voli'];
+        foreach ($categories as $cat) {
+            Cache::forget('catalog_lapangan_' . $cat);
+        }
     }
 }
