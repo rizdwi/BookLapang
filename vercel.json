@@ -10,7 +10,7 @@
   "routes": [
     {
       "src": "/storage/lapangan/(.*)",
-      "dest": "/public/images/lapangan/$1"
+      "dest": "/images/lapangan/$1"
     },
     {
       "src": "/images/(.*)",
