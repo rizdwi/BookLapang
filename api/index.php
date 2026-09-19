@@ -36,6 +36,23 @@ putenv('APP_ROUTES_CACHE=' . $tmp . '/bootstrap/cache/routes.php');
 putenv('APP_SERVICES_CACHE=' . $tmp . '/bootstrap/cache/services.php');
 putenv('DB_CONNECTION=sqlite');
 putenv('DB_DATABASE=' . $targetDb);
+putenv('SESSION_DRIVER=cookie');
+putenv('SESSION_LIFETIME=120');
+putenv('CACHE_STORE=array');
+
+$_ENV['SESSION_DRIVER'] = 'cookie';
+$_ENV['SESSION_LIFETIME'] = '120';
+$_ENV['CACHE_STORE'] = 'array';
+$_SERVER['SESSION_DRIVER'] = 'cookie';
+$_SERVER['SESSION_LIFETIME'] = '120';
+$_SERVER['CACHE_STORE'] = 'array';
+
+if (empty($_ENV['APP_KEY']) && empty(getenv('APP_KEY'))) {
+    $fallbackKey = 'base64:PF0TuxyMcBeuawZO8dLqA4agIUJQTDmb6xiRPVVAomY=';
+    putenv('APP_KEY=' . $fallbackKey);
+    $_ENV['APP_KEY'] = $fallbackKey;
+    $_SERVER['APP_KEY'] = $fallbackKey;
+}
 
 // 4. Delegasikan eksekusi request ke Front Controller Laravel
 require __DIR__ . '/../public/index.php';

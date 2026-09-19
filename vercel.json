@@ -26,6 +26,7 @@
     "APP_KEY": "base64:PF0TuxyMcBeuawZO8dLqA4agIUJQTDmb6xiRPVVAomY=",
     "CACHE_STORE": "array",
     "SESSION_DRIVER": "cookie",
+    "SESSION_LIFETIME": "120",
     "LOG_CHANNEL": "stderr"
   }
 }
