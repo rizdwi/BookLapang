@@ -50,7 +50,7 @@ class JadwalController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'jam_mulai' => 'required|date_format:H:i',
-            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+            'jam_selesai' => 'required|date_format:H:i',
             'durasi' => 'required|integer|min:30', // menit
         ]);
 
@@ -85,7 +85,7 @@ class JadwalController extends Controller
         $endDate = Carbon::parse($request->tanggal_selesai);
 
         $jamMulai = $request->get('jam_mulai', '08:00');
-        $jamSelesai = $request->get('jam_selesai', '22:00');
+        $jamSelesai = $request->get('jam_selesai', '23:00');
         $durasi = $request->get('durasi', 60);
 
         $totalCount = 0;
@@ -109,8 +109,21 @@ class JadwalController extends Controller
      */
     private function createSlots($lapanganId, $tanggal, $jamMulaiStr, $jamSelesaiStr, $durasiMenit)
     {
+        if ($jamSelesaiStr === '24:00') {
+            $jamSelesaiStr = '00:00';
+        }
+        if ($jamMulaiStr === '24:00') {
+            $jamMulaiStr = '00:00';
+        }
+
         $mulai = Carbon::createFromFormat('H:i', $jamMulaiStr);
         $selesai = Carbon::createFromFormat('H:i', $jamSelesaiStr);
+
+        // Jika jam_selesai <= jam_mulai (misal 08:00 - 00:00), berarti jam_selesai adalah midnight (akhir hari/besoknya)
+        if ($selesai <= $mulai) {
+            $selesai->addDay();
+        }
+
         $count = 0;
 
         while ($mulai < $selesai) {
