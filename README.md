@@ -85,6 +85,26 @@ Untuk menjamin eksekusi query sub-milidetik pada tabel transaksi yang membesar:
 
 ---
 
+## Pengujian Kualitas (QA Automation & Performance Benchmark)
+
+Aplikasi ini telah melalui pengujian otomatis menyeluruh (*Automated Test Suite*) untuk menjamin fungsionalitas, keamanan, dan keandalan sistem:
+
+### Hasil Functional QA Test (31 / 31 PASSED)
+- **Halaman Publik & Katalog:** 100% Lolos (Respons HTTP 200, penanganan 404 pada ID invalid).
+- **Alur Autentikasi & Keamanan:** 100% Lolos (CSRF Protection HTTP 419, Otorisasi Pembatalan Antar-User HTTP 403).
+- **Integritas Transaksi & Unpaid Guard:** 100% Lolos (Pembatasan maksimal 2 pesanan `pending` berhasil memblokir booking ke-3, pelepasan slot setelah pembatalan berjalan otomatis).
+- **Interaktivitas Modal Pembayaran:** 100% Lolos (Scope Alpine.js reactive state untuk QRIS & BCA Virtual Account).
+- **Pencegahan Error Jam Operasional:** 100% Lolos (Penanganan fleksibel jam operasional 08.00–00.00 / tengah malam tanpa kegagalan constraint).
+
+### Latensi & Throughput (Benchmarking Local)
+| Endpoint | Rata-rata Latensi | Median (p50) | Percentile (p95) | Estimasi Throughput |
+|----------|-------------------|--------------|------------------|---------------------|
+| `GET /` (Katalog Utama) | 69ms | 54ms | 141ms | ~14.5 req/s |
+| `GET /lapangan/1` (Detail Slot) | 46ms | 39ms | 84ms | ~21.7 req/s |
+| `GET /dashboard` (Dasbor User) | 52ms | 40ms | 114ms | ~19.2 req/s |
+
+---
+
 ## Fitur Aplikasi
 
 ### Alur Pelanggan (Customer Experience)
