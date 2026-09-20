@@ -32,20 +32,14 @@ class BookingController extends Controller
                 ->with('error', 'Maaf, jadwal ini baru saja diambil atau sudah tidak tersedia.');
         }
 
-        // Aturan Bisnis: User tidak bisa pesan lebih dari 2 lapangan berbeda jika belum payment (status pending)
-        $pendingDistinctCourtsCount = Booking::where('user_id', Auth::id())
+        // Aturan Bisnis: Max 2 pesanan pending — selesaikan pembayaran dulu
+        $pendingCount = Booking::where('user_id', Auth::id())
             ->where('status', 'pending')
-            ->distinct()
-            ->count('lapangan_id');
+            ->count();
 
-        $alreadyHasPendingForThisCourt = Booking::where('user_id', Auth::id())
-            ->where('status', 'pending')
-            ->where('lapangan_id', $lapangan->id)
-            ->exists();
-
-        if ($pendingDistinctCourtsCount >= 2 && !$alreadyHasPendingForThisCourt) {
+        if ($pendingCount >= 2) {
             return redirect()->route('customer.dashboard')
-                ->with('error', 'Anda memiliki pesanan belum dibayar di ' . $pendingDistinctCourtsCount . ' lapangan berbeda. Selesaikan pembayaran atau batalkan pesanan sebelum memesan lapangan lain.');
+                ->with('error', 'Anda sudah memiliki ' . $pendingCount . ' pesanan yang belum dibayar. Selesaikan pembayaran atau batalkan pesanan lama sebelum membuat pesanan baru.');
         }
 
         return view('booking.create', compact('slot', 'lapangan'));
@@ -56,6 +50,8 @@ class BookingController extends Controller
      */
     public function store(StoreBookingRequest $request)
     {
+        $booking = null;
+
         try {
             DB::beginTransaction();
 
@@ -65,21 +61,15 @@ class BookingController extends Controller
 
             $lapangan = Lapangan::findOrFail($request->lapangan_id);
 
-            // Validasi ulang batas 2 lapangan berbeda pending
-            $pendingDistinctCourtsCount = Booking::where('user_id', Auth::id())
+            // Validasi ulang: max 2 pesanan pending total
+            $pendingCount = Booking::where('user_id', Auth::id())
                 ->where('status', 'pending')
-                ->distinct()
-                ->count('lapangan_id');
+                ->count();
 
-            $alreadyHasPendingForThisCourt = Booking::where('user_id', Auth::id())
-                ->where('status', 'pending')
-                ->where('lapangan_id', $lapangan->id)
-                ->exists();
-
-            if ($pendingDistinctCourtsCount >= 2 && !$alreadyHasPendingForThisCourt) {
+            if ($pendingCount >= 2) {
                 DB::rollBack();
                 return redirect()->route('customer.dashboard')
-                    ->with('error', 'Anda memiliki pesanan belum dibayar di ' . $pendingDistinctCourtsCount . ' lapangan berbeda. Selesaikan pembayaran atau batalkan pesanan sebelum memesan lapangan lain.');
+                    ->with('error', 'Anda sudah memiliki ' . $pendingCount . ' pesanan yang belum dibayar. Selesaikan pembayaran atau batalkan pesanan lama sebelum membuat pesanan baru.');
             }
 
             // Cek apakah slot masih tersedia
@@ -119,17 +109,21 @@ class BookingController extends Controller
             $slot->update(['tersedia' => false]);
 
             DB::commit();
-
-            // Dispatch Asynchronous Queue Job untuk pengiriman notifikasi invoice/tiket
-            ProcessBookingNotificationJob::dispatch($booking);
-
-            return redirect()->route('customer.dashboard')
-                ->with('success', 'Booking berhasil dibuat! Silakan lakukan pembayaran sesuai metode yang dipilih.');
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->route('customer.dashboard')
                 ->with('error', 'Terjadi kesalahan saat memproses booking. Silakan coba lagi.');
         }
+
+        // Dispatch di luar try/catch — booking sudah committed, kegagalan dispatch tidak boleh memunculkan error ke user
+        try {
+            ProcessBookingNotificationJob::dispatch($booking);
+        } catch (\Exception $e) {
+            // ponytail: queue belum dikonfigurasi di serverless, abaikan saja
+        }
+
+        return redirect()->route('customer.dashboard')
+            ->with('success', 'Booking berhasil dibuat! Silakan lakukan pembayaran sesuai metode yang dipilih.');
     }
 
     /**
