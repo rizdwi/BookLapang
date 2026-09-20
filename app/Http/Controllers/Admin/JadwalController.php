@@ -123,19 +123,23 @@ class JadwalController extends Controller
             $selesaiFormatted = $slotSelesai->format('H:i:s');
 
             $exists = JadwalSlot::where('lapangan_id', $lapanganId)
-                ->where('tanggal', $tanggal)
+                ->whereDate('tanggal', $tanggal)
                 ->where('jam_mulai', $mulaiFormatted)
                 ->exists();
 
             if (!$exists) {
-                JadwalSlot::create([
-                    'lapangan_id' => $lapanganId,
-                    'tanggal' => $tanggal,
-                    'jam_mulai' => $mulaiFormatted,
-                    'jam_selesai' => $selesaiFormatted,
-                    'tersedia' => true,
-                ]);
-                $count++;
+                try {
+                    JadwalSlot::create([
+                        'lapangan_id' => $lapanganId,
+                        'tanggal' => $tanggal,
+                        'jam_mulai' => $mulaiFormatted,
+                        'jam_selesai' => $selesaiFormatted,
+                        'tersedia' => true,
+                    ]);
+                    $count++;
+                } catch (\Illuminate\Database\UniqueConstraintViolationException |\Illuminate\Database\QueryException $e) {
+                    // Abaikan jika slot jadwal sudah ada (duplikat)
+                }
             }
 
             $mulai->addMinutes($durasiMenit);
