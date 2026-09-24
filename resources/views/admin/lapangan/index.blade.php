@@ -32,13 +32,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <div class="h-12 w-14 rounded-lg bg-gray-100 overflow-hidden shrink-0 border border-gray-200">
-                                        @if($lap->foto)
-                                            <img class="h-full w-full object-cover" src="{{ asset('storage/' . $lap->foto) }}" alt="">
-                                        @else
-                                            <div class="h-full w-full flex items-center justify-center text-gray-400 text-xs">
-                                                No Pic
-                                            </div>
-                                        @endif
+                                        <img class="h-full w-full object-cover" src="{{ $lap->foto_url }}" alt="{{ $lap->nama }}" loading="lazy">
                                     </div>
                                     <div>
                                         <div class="font-bold text-gray-900">{{ $lap->nama }}</div>

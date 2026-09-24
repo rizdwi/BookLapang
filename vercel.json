@@ -9,12 +9,22 @@
   },
   "routes": [
     {
-      "src": "/storage/lapangan/(.*)",
-      "dest": "/public/images/lapangan/$1"
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "X-Frame-Options": "SAMEORIGIN",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+      },
+      "continue": true
     },
     {
       "src": "/images/(.*)",
       "dest": "/public/images/$1"
+    },
+    {
+      "src": "/storage/lapangan/(.*)",
+      "dest": "/public/images/lapangan/$1"
     },
     {
       "src": "/(.*)",
@@ -25,7 +35,7 @@
     "APP_NAME": "BookLapang",
     "APP_URL": "https://book-lapang.vercel.app",
     "APP_ENV": "production",
-    "APP_DEBUG": "true",
+    "APP_DEBUG": "false",
     "APP_KEY": "base64:PF0TuxyMcBeuawZO8dLqA4agIUJQTDmb6xiRPVVAomY=",
     "CACHE_STORE": "array",
     "SESSION_DRIVER": "cookie",

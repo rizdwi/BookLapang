@@ -185,8 +185,8 @@
 
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    @if($booking->lapangan && $booking->lapangan->foto)
-                                        <img src="{{ asset('storage/' . $booking->lapangan->foto) }}" class="w-10 h-10 rounded-xl object-cover border border-gray-200" alt="">
+                                    @if($booking->lapangan)
+                                        <img src="{{ $booking->lapangan->foto_url }}" class="w-10 h-10 rounded-xl object-cover border border-gray-200" alt="{{ $booking->lapangan->nama }}" loading="lazy">
                                     @else
                                         <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-xs text-gray-400">No Img</div>
                                     @endif

@@ -134,5 +134,7 @@ class LapanganController extends Controller
         foreach ($categories as $cat) {
             Cache::forget('catalog_lapangan_' . $cat);
         }
+        Cache::forget('landing_total_lapangan');
+        Cache::forget('landing_featured_lapangan');
     }
 }

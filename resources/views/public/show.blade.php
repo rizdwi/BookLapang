@@ -37,13 +37,7 @@
 <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-8">
     <div class="grid grid-cols-1 lg:grid-cols-12">
         <div class="lg:col-span-5 h-64 lg:h-auto relative bg-gray-100">
-            @if($lapangan->foto)
-                <img class="h-full w-full object-cover" src="{{ asset('storage/' . $lapangan->foto) }}" alt="{{ $lapangan->nama }}">
-            @else
-                <div class="h-full w-full flex items-center justify-center text-gray-400">
-                    Tidak ada foto
-                </div>
-            @endif
+            <img class="h-full w-full object-cover" src="{{ $lapangan->foto_url }}" alt="{{ $lapangan->nama }}" loading="lazy">
             <span class="absolute top-4 left-4 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider bg-[#1e3a5f]/90 text-white backdrop-blur-sm">
                 {{ ucfirst($lapangan->tipe) }}
             </span>

@@ -89,8 +89,8 @@
             <div class="sm:col-span-6">
                 <label class="block text-sm font-medium text-[#1a1a1a]">Foto Lapangan Saat Ini</label>
                 <div class="mt-2 mb-4">
-                    @if(isset($lapangan) && $lapangan->foto)
-                        <img src="{{ asset('storage/' . $lapangan->foto) }}" alt="Foto" class="h-48 rounded object-cover">
+                    @if(isset($lapangan))
+                        <img src="{{ $lapangan->foto_url }}" alt="Foto" class="h-48 rounded-xl object-cover border border-gray-200" loading="lazy">
                     @else
                         <div class="text-sm text-gray-500">Tidak ada foto</div>
                     @endif

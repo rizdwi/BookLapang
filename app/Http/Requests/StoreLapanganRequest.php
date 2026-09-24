@@ -27,7 +27,7 @@ class StoreLapanganRequest extends FormRequest
             'tipe' => ['required', Rule::in(['futsal', 'badminton', 'basket', 'voli', 'tenis'])],
             'deskripsi' => ['nullable', 'string'],
             'harga_per_jam' => ['required', 'numeric', 'min:0'],
-            'foto' => ['nullable', 'image', 'max:2048'],
+            'foto' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
             'alamat' => ['nullable', 'string'],
             'aktif' => ['boolean'],
         ];

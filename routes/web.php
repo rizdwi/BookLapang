@@ -61,4 +61,27 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/booking/{booking}', [AdminBookingController::class, 'updateStatus'])->name('booking.update');
 });
 
+// Static Asset Delivery Fallback (Safe Local & Serverless Image Delivery with Traversal Guard)
+Route::get('/images/lapangan/{filename}', function (string $filename) {
+    $cleanFilename = basename($filename);
+    $path = public_path('images/lapangan/' . $cleanFilename);
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Cache-Control' => 'public, max-age=86400, must-revalidate',
+        ]);
+    }
+    abort(404);
+})->where('filename', '[A-Za-z0-9_\-\.]+');
+
+Route::get('/storage/lapangan/{filename}', function (string $filename) {
+    $cleanFilename = basename($filename);
+    $path = public_path('images/lapangan/' . $cleanFilename);
+    if (file_exists($path)) {
+        return response()->file($path, [
+            'Cache-Control' => 'public, max-age=86400, must-revalidate',
+        ]);
+    }
+    abort(404);
+})->where('filename', '[A-Za-z0-9_\-\.]+');
+
 require __DIR__.'/auth.php';

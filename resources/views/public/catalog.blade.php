@@ -118,13 +118,7 @@
                     
                     {{-- Foto Lapangan --}}
                     <div class="relative h-52 w-full bg-gray-100 overflow-hidden">
-                        @if($lap->foto)
-                            <img src="{{ asset('storage/' . $lap->foto) }}" alt="{{ $lap->nama }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                        @else
-                            <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                                Tidak ada foto
-                            </div>
-                        @endif
+                        <img src="{{ $lap->foto_url }}" alt="{{ $lap->nama }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
 
                         {{-- Badge Tipe --}}
                         <span class="absolute top-3 left-3 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-[#1e3a5f]/90 text-white backdrop-blur-sm shadow-sm">

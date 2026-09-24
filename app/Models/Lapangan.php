@@ -27,6 +27,46 @@ class Lapangan extends Model
         'aktif' => 'boolean',
     ];
 
+    protected $appends = [
+        'foto_url',
+    ];
+
+    /**
+     * Get image URL with automatic fallback for local and Vercel CDN
+     */
+    public function getFotoUrlAttribute(): string
+    {
+        if (empty($this->foto)) {
+            $defaultTipe = $this->tipe ?: 'futsal';
+            return asset('images/lapangan/' . $defaultTipe . '.jpg');
+        }
+
+        // Support full external URL (e.g. Cloudinary, S3, Unsplash)
+        if (str_starts_with($this->foto, 'http://') || str_starts_with($this->foto, 'https://')) {
+            return $this->foto;
+        }
+
+        $filename = basename($this->foto);
+
+        // Check in public/images/lapangan/ (Vercel & local static assets)
+        if (file_exists(public_path('images/lapangan/' . $filename))) {
+            return asset('images/lapangan/' . $filename);
+        }
+
+        // Check in public/images/
+        if (file_exists(public_path('images/' . $this->foto))) {
+            return asset('images/' . $this->foto);
+        }
+
+        // Fallback to sport type image
+        $sportTipe = $this->tipe ?: 'futsal';
+        if (file_exists(public_path('images/lapangan/' . $sportTipe . '.jpg'))) {
+            return asset('images/lapangan/' . $sportTipe . '.jpg');
+        }
+
+        return asset('images/lapangan/' . $filename);
+    }
+
     /**
      * Scope a query to only include active lapangan.
      */
