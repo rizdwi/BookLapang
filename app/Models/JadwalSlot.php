@@ -18,34 +18,41 @@ class JadwalSlot extends Model
         'jam_mulai',
         'jam_selesai',
         'tersedia',
+        'harga',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'tersedia' => 'boolean',
+        'harga' => 'integer',
     ];
 
-    /**
-     * Scope a query to only include available slots.
-     */
     public function scopeTersedia(Builder $query): void
     {
         $query->where('tersedia', true);
     }
 
-    /**
-     * Get the lapangan that owns the slot.
-     */
     public function lapangan(): BelongsTo
     {
         return $this->belongsTo(Lapangan::class);
     }
 
-    /**
-     * Get the bookings for the slot.
-     */
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function bookingSlots(): HasMany
+    {
+        return $this->hasMany(BookingSlot::class);
+    }
+
+    public function getHargaEfektifAttribute(): int
+    {
+        if ($this->harga && $this->harga > 0) {
+            return $this->harga;
+        }
+
+        return $this->lapangan ? $this->lapangan->harga_per_jam : 0;
     }
 }

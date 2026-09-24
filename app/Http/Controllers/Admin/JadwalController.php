@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\JadwalSlot;
 use App\Models\Lapangan;
+use App\Models\LapanganTarif;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -24,7 +25,7 @@ class JadwalController extends Controller
     public function all(Request $request)
     {
         $lapanganList = Lapangan::aktif()->get();
-        $selectedLapanganId = $request->get('lapangan_id', $lapanganList->first()->id ?? null);
+        $selectedLapanganId = $request->get('lapangan_id', $lapanganList->first()?->id);
         $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
 
         $query = JadwalSlot::with('lapangan')->orderBy('tanggal', 'asc')->orderBy('jam_mulai', 'asc');
@@ -105,7 +106,7 @@ class JadwalController extends Controller
     }
 
     /**
-     * Helper privat pembuatan slot
+     * Helper privat pembuatan slot dengan kalkulasi Dynamic Pricing
      */
     private function createSlots($lapanganId, $tanggal, $jamMulaiStr, $jamSelesaiStr, $durasiMenit)
     {
@@ -119,10 +120,23 @@ class JadwalController extends Controller
         $mulai = Carbon::createFromFormat('H:i', $jamMulaiStr);
         $selesai = Carbon::createFromFormat('H:i', $jamSelesaiStr);
 
-        // Jika jam_selesai <= jam_mulai (misal 08:00 - 00:00), berarti jam_selesai adalah midnight (akhir hari/besoknya)
+        // Jika jam_selesai <= jam_mulai (misal 08:00 - 00:00), berarti jam_selesai adalah midnight
         if ($selesai <= $mulai) {
             $selesai->addDay();
         }
+
+        $carbonTanggal = Carbon::parse($tanggal);
+        $isWeekend = $carbonTanggal->isWeekend();
+        $tipeHari = $isWeekend ? 'weekend' : 'weekday';
+
+        // Ambil aturan tarif dinamis lapangan jika ada
+        $tarifs = LapanganTarif::where('lapangan_id', $lapanganId)
+            ->where('aktif', true)
+            ->whereIn('tipe_hari', ['all', $tipeHari])
+            ->get();
+
+        $lapangan = Lapangan::find($lapanganId);
+        $defaultPrice = $lapangan ? $lapangan->harga_per_jam : 0;
 
         $count = 0;
 
@@ -141,6 +155,15 @@ class JadwalController extends Controller
                 ->exists();
 
             if (!$exists) {
+                // Tentukan harga slot berdasarkan tarif dinamis atau default
+                $slotPrice = $defaultPrice;
+                foreach ($tarifs as $trf) {
+                    if ($mulaiFormatted >= $trf->jam_mulai && $mulaiFormatted < $trf->jam_selesai) {
+                        $slotPrice = $trf->harga;
+                        break;
+                    }
+                }
+
                 try {
                     JadwalSlot::create([
                         'lapangan_id' => $lapanganId,
@@ -148,6 +171,7 @@ class JadwalController extends Controller
                         'jam_mulai' => $mulaiFormatted,
                         'jam_selesai' => $selesaiFormatted,
                         'tersedia' => true,
+                        'harga' => $slotPrice,
                     ]);
                     $count++;
                 } catch (\Illuminate\Database\UniqueConstraintViolationException |\Illuminate\Database\QueryException $e) {

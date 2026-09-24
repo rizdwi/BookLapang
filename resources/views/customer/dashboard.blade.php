@@ -5,6 +5,7 @@
     paymentModalOpen: false,
     modalData: {
         id: '',
+        kode: '',
         lapangan: '',
         total: '',
         method: 'qris',
@@ -12,8 +13,8 @@
         date: ''
     },
     copied: false,
-    openPayment(id, lapangan, total, method, va, date) {
-        this.modalData = { id, lapangan, total, method, vaNumber: va, date };
+    openPayment(id, kode, lapangan, total, method, va, date) {
+        this.modalData = { id, kode, lapangan, total, method, vaNumber: va, date };
         this.paymentModalOpen = true;
         this.copied = false;
     },
@@ -31,7 +32,7 @@
         <p class="text-sm text-[#64748b]">Selamat datang kembali, <span class="font-semibold text-gray-800">{{ auth()->user()->name }}</span>! Pantau status reservasi lapanganmu di sini.</p>
     </div>
     <div>
-        <a href="{{ route('home') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-semibold rounded-lg text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-sm transition-colors">
+        <a href="{{ route('lapangan.index') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-bold rounded-xl text-white bg-[#0d9488] hover:bg-[#0f766e] shadow-sm transition-colors">
             + Pesan Lapangan Baru
         </a>
     </div>
@@ -49,8 +50,8 @@
 
         <div class="text-center mb-4">
             <span class="text-xs font-bold text-teal-600 uppercase tracking-widest block">Tagihan Pembayaran</span>
-            <h3 class="text-xl font-black text-[#1e3a5f]" x-text="'Pesanan #' + modalData.id"></h3>
-            <p class="text-xs text-gray-500" x-text="modalData.lapangan + ' • ' + modalData.date"></p>
+            <h3 class="text-xl font-black text-[#1e3a5f]" x-text="modalData.kode"></h3>
+            <p class="text-xs text-gray-500 mt-0.5" x-text="modalData.lapangan + ' • ' + modalData.date"></p>
             <div class="text-2xl font-black text-emerald-700 mt-2" x-text="modalData.total"></div>
         </div>
 
@@ -98,7 +99,7 @@
         </template>
 
         <div class="mt-5">
-            <button type="button" @click="paymentModalOpen = false" class="w-full py-2 bg-[#1e3a5f] text-white rounded-lg text-sm font-semibold hover:bg-slate-800">
+            <button type="button" @click="paymentModalOpen = false" class="w-full py-2 bg-[#1e3a5f] text-white rounded-xl text-sm font-semibold hover:bg-slate-800">
                 Tutup
             </button>
         </div>
@@ -107,82 +108,97 @@
 
 {{-- Metric Cards --}}
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
         <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider block">Total Pesanan</span>
         <span class="text-2xl font-black text-[#1e3a5f] mt-1 block">{{ $totalBookings ?? 0 }}</span>
     </div>
 
-    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
         <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider block">Menunggu Pembayaran</span>
         <span class="text-2xl font-black text-amber-600 mt-1 block">{{ $pendingBookings ?? 0 }}</span>
     </div>
 
-    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
         <span class="text-xs font-semibold text-teal-600 uppercase tracking-wider block">Dikonfirmasi</span>
         <span class="text-2xl font-black text-teal-600 mt-1 block">{{ $confirmedBookings ?? 0 }}</span>
     </div>
 
-    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+    <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
         <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider block">Selesai</span>
         <span class="text-2xl font-black text-emerald-600 mt-1 block">{{ $doneBookings ?? 0 }}</span>
     </div>
 </div>
 
 {{-- Tabel Riwayat Booking --}}
-<div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+<div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden mb-12">
     <div class="px-6 py-5 border-b border-gray-200 flex items-center justify-between">
         <h2 class="text-lg font-bold text-[#1e3a5f]">Daftar Riwayat Booking</h2>
-        <span class="text-xs text-gray-500">Menampilkan seluruh riwayat</span>
+        <span class="text-xs text-gray-500">Menampilkan seluruh reservasi Anda</span>
     </div>
 
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 text-left">
             <thead class="bg-gray-50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                 <tr>
-                    <th class="px-6 py-3.5">ID & Waktu Main</th>
+                    <th class="px-6 py-3.5">Kode & Jadwal Main</th>
                     <th class="px-6 py-3.5">Lapangan</th>
                     <th class="px-6 py-3.5">Metode Bayar</th>
-                    <th class="px-6 py-3.5">Total Tarif</th>
-                    <th class="px-6 py-3.5">Status</th>
-                    <th class="px-6 py-3.5 text-right">Aksi</th>
+                    <th class="px-6 py-3.5">Total Tagihan</th>
+                    <th class="px-6 py-3.5">Status & Timer</th>
+                    <th class="px-6 py-3.5 text-right">Aksi & Tiket</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100 text-sm">
                 @if(isset($bookings) && count($bookings) > 0)
                     @foreach($bookings as $booking)
                         @php
-                            $cleanPhone = auth()->user()->phone ? preg_replace('/^0/', '', preg_replace('/[^0-9]/', '', auth()->user()->phone)) : '81385084327';
-                            $vaNum = '80777' . $cleanPhone;
+                            $cleanPhone = auth()->user()->no_hp ?? '81385084327';
+                            $cleanPhone = preg_replace('/^0/', '', preg_replace('/[^0-9]/', '', $cleanPhone));
+                            $vaNum = '80777' . ($cleanPhone ?: '8123456789');
                             $formattedTotal = 'Rp ' . number_format($booking->total_harga, 0, ',', '.');
                             $formattedDate = \Carbon\Carbon::parse($booking->tanggal_booking)->translatedFormat('d M Y');
-                            $bookingIdPadded = str_pad($booking->id, 4, '0', STR_PAD_LEFT);
+                            $kodeBooking = $booking->kode_booking ?? ('#BK-' . str_pad($booking->id, 5, '0', STR_PAD_LEFT));
                             $metodeBayar = $booking->metode_pembayaran ?? 'qris';
+                            $remainingSec = $booking->remainingSeconds();
+                            
+                            // Teks WhatsApp Share
+                            $waShareText = rawurlencode("Halo gaes! Kita sudah booking lapangan di BookLapang:\n\n"
+                                . "🏟️ Lapangan: " . ($booking->lapangan->nama ?? 'Lapangan') . "\n"
+                                . "📅 Tanggal: " . $formattedDate . "\n"
+                                . "⏰ Jam: " . substr($booking->jam_mulai, 0, 5) . " - " . substr($booking->jam_selesai, 0, 5) . " WIB\n"
+                                . "📋 Kode Tiket: " . $kodeBooking . "\n\n"
+                                . "Jangan lupa hadir tepat waktu ya!");
                         @endphp
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-bold text-[#1e3a5f] block">#BK-{{ $bookingIdPadded }}</span>
-                                <span class="text-gray-900 font-medium block mt-0.5">{{ $formattedDate }}</span>
-                                <span class="text-xs text-teal-700 font-semibold block">
+                                <span class="font-mono font-black text-[#1e3a5f] block text-sm">{{ $kodeBooking }}</span>
+                                <span class="text-gray-900 font-semibold block mt-0.5">{{ $formattedDate }}</span>
+                                <span class="text-xs text-teal-700 font-bold block">
                                     {{ substr($booking->jam_mulai, 0, 5) }} - {{ substr($booking->jam_selesai, 0, 5) }} WIB
+                                    @if($booking->bookingSlots->count() > 1)
+                                        <span class="text-[10px] bg-teal-100 text-teal-800 px-1.5 py-0.5 rounded ml-1">
+                                            {{ $booking->bookingSlots->count() }} Jam
+                                        </span>
+                                    @endif
                                 </span>
                             </td>
 
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     @if($booking->lapangan && $booking->lapangan->foto)
-                                        <img src="{{ asset('storage/' . $booking->lapangan->foto) }}" class="w-10 h-10 rounded-lg object-cover border border-gray-200" alt="">
+                                        <img src="{{ asset('storage/' . $booking->lapangan->foto) }}" class="w-10 h-10 rounded-xl object-cover border border-gray-200" alt="">
                                     @else
-                                        <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-400">No Img</div>
+                                        <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center text-xs text-gray-400">No Img</div>
                                     @endif
                                     <div>
                                         <span class="font-bold text-gray-900 block">{{ $booking->lapangan->nama ?? 'Lapangan' }}</span>
-                                        <span class="text-xs text-gray-500 block">{{ ucfirst($booking->lapangan->tipe ?? '-') }}</span>
+                                        <span class="text-xs text-gray-500 block uppercase font-semibold">{{ $booking->lapangan->tipe ?? '-' }}</span>
                                     </div>
                                 </div>
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="uppercase text-xs font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                                <span class="uppercase text-xs font-bold text-gray-700 bg-gray-100 px-2.5 py-1 rounded-lg">
                                     {{ str_replace('_', ' ', $metodeBayar) }}
                                 </span>
                             </td>
@@ -193,35 +209,81 @@
 
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-status-badge :status="$booking->status" />
+
+                                {{-- Countdown Timer untuk Status Pending --}}
+                                @if($booking->status === 'pending')
+                                    <div x-data="{
+                                        secondsLeft: {{ $remainingSec }},
+                                        timerText: '',
+                                        init() {
+                                            this.updateDisplay();
+                                            if (this.secondsLeft > 0) {
+                                                const timer = setInterval(() => {
+                                                    this.secondsLeft--;
+                                                    this.updateDisplay();
+                                                    if (this.secondsLeft <= 0) {
+                                                        clearInterval(timer);
+                                                        window.location.reload();
+                                                    }
+                                                }, 1000);
+                                            }
+                                        },
+                                        updateDisplay() {
+                                            if (this.secondsLeft <= 0) {
+                                                this.timerText = 'Kadaluarsa';
+                                                return;
+                                            }
+                                            const m = Math.floor(this.secondsLeft / 60);
+                                            const s = this.secondsLeft % 60;
+                                            this.timerText = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+                                        }
+                                    }" class="mt-1 flex items-center gap-1 text-[11px] font-mono text-amber-700 font-bold">
+                                        <svg class="w-3 h-3 text-amber-600 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <span x-text="timerText"></span>
+                                    </div>
+                                @endif
                             </td>
 
-                            {{-- Tombol Aksi Pelanggan --}}
+                            {{-- Tombol Aksi & Tiket --}}
                             <td class="px-6 py-4 whitespace-nowrap text-right text-xs font-semibold">
-                                @if($booking->status === 'pending')
-                                    <div class="flex items-center justify-end gap-2">
+                                <div class="flex items-center justify-end gap-1.5 flex-wrap">
+                                    {{-- Tombol E-Tiket Digital --}}
+                                    <a href="{{ route('booking.ticket', $booking->id) }}" 
+                                       class="px-2.5 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg transition-colors flex items-center gap-1 font-bold">
+                                        <svg class="w-3.5 h-3.5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
+                                        Tiket
+                                    </a>
+
+                                    {{-- Share WA ke Tim jika Confirmed / Done --}}
+                                    @if(in_array($booking->status, ['confirmed', 'done']))
+                                        <a href="https://wa.me/?text={{ $waShareText }}" 
+                                           target="_blank" 
+                                           class="px-2.5 py-1.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 rounded-lg transition-colors flex items-center gap-1 font-bold"
+                                           title="Bagikan jadwal ke tim via WhatsApp">
+                                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.669-.699c.969.539 1.761.85 2.791.85 3.181 0 5.767-2.586 5.767-5.766.001-3.182-2.585-5.836-5.767-5.836zm3.393 8.232c-.146.41-1.044.823-1.442.846-.388.022-.725-.09-2.333-.74-1.921-.778-3.155-2.73-3.251-2.859-.096-.13-.775-1.03-.775-1.964s.484-1.391.656-1.583c.172-.191.376-.239.502-.239.125 0 .252.002.361.008.117.006.273-.044.428.328.16.386.549 1.341.597 1.439.049.098.082.213.016.342-.066.13-.098.212-.196.326-.098.115-.207.257-.295.345-.098.098-.201.205-.087.401.115.196.509.84 1.092 1.36.751.67 1.385.877 1.581.975.196.098.311.082.426-.049.115-.131.492-.573.623-.77.131-.197.262-.164.442-.098.18.066 1.147.541 1.344.639.197.098.328.147.376.23.049.082.049.475-.097.885z"/></svg>
+                                            WA Tim
+                                        </a>
+                                    @endif
+
+                                    @if($booking->status === 'pending')
                                         <button type="button" 
-                                                @click="openPayment('{{ $bookingIdPadded }}', '{{ addslashes($booking->lapangan->nama) }}', '{{ $formattedTotal }}', '{{ $metodeBayar }}', '{{ $vaNum }}', '{{ $formattedDate }}')"
-                                                class="text-white bg-[#0d9488] hover:bg-[#0f766e] px-2.5 py-1.5 rounded font-bold shadow-sm transition-colors">
-                                            Bayar Sekarang
+                                                @click="openPayment('{{ $booking->id }}', '{{ $kodeBooking }}', '{{ addslashes($booking->lapangan->nama) }}', '{{ $formattedTotal }}', '{{ $metodeBayar }}', '{{ $vaNum }}', '{{ $formattedDate }}')"
+                                                class="text-white bg-[#0d9488] hover:bg-[#0f766e] px-2.5 py-1.5 rounded-lg font-bold shadow-sm transition-colors">
+                                            Bayar
                                         </button>
 
                                         <form action="{{ route('booking.cancel', $booking->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan booking ini?');">
                                             @csrf
-                                            <button type="submit" class="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded border border-red-200 transition-colors">
+                                            <button type="submit" class="text-red-600 hover:text-red-800 bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg border border-red-200 transition-colors">
                                                 Batal
                                             </button>
                                         </form>
-                                    </div>
-                                @elseif($booking->status === 'confirmed')
-                                    <span class="inline-flex items-center gap-1 text-teal-700 bg-teal-50 px-2.5 py-1.5 rounded text-xs font-medium border border-teal-200">
-                                        <svg class="w-3.5 h-3.5 text-teal-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
-                                        Siap Main
-                                    </span>
-                                @else
-                                    <a href="{{ route('lapangan.show', $booking->lapangan_id) }}" class="text-[#0d9488] hover:text-[#0f766e] bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded transition-colors">
-                                        Pesan Lagi
-                                    </a>
-                                @endif
+                                    @elseif($booking->status !== 'confirmed')
+                                        <a href="{{ route('lapangan.show', $booking->lapangan_id) }}" class="text-[#0d9488] hover:text-[#0f766e] bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors">
+                                            Pesan Lagi
+                                        </a>
+                                    @endif
+                                </div>
                             </td>
                         </tr>
                     @endforeach

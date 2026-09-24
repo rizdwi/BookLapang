@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class StoreBookingRequest extends FormRequest
 {
@@ -24,7 +23,9 @@ class StoreBookingRequest extends FormRequest
     {
         return [
             'lapangan_id' => ['required', 'exists:lapangan,id'],
-            'jadwal_slot_id' => ['required', 'exists:jadwal_slots,id'],
+            'jadwal_slot_id' => ['nullable', 'exists:jadwal_slots,id'],
+            'jadwal_slot_ids' => ['nullable', 'array', 'min:1'],
+            'jadwal_slot_ids.*' => ['exists:jadwal_slots,id'],
             'metode_pembayaran' => ['nullable', 'string', 'in:transfer_bca,transfer_mandiri,qris,cash'],
             'catatan' => ['nullable', 'string', 'max:500'],
         ];
@@ -35,8 +36,7 @@ class StoreBookingRequest extends FormRequest
         return [
             'lapangan_id.required' => 'Lapangan harus dipilih.',
             'lapangan_id.exists' => 'Lapangan tidak ditemukan.',
-            'jadwal_slot_id.required' => 'Jadwal harus dipilih.',
-            'jadwal_slot_id.exists' => 'Jadwal tidak ditemukan.',
+            'jadwal_slot_ids.min' => 'Pilih minimal satu slot jadwal.',
         ];
     }
 }

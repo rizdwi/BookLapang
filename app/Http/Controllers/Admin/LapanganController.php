@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLapanganRequest;
 use App\Models\Lapangan;
+use App\Models\LapanganTarif;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,7 @@ class LapanganController extends Controller
 {
     public function index()
     {
-        $lapangan = Lapangan::latest()->get();
+        $lapangan = Lapangan::with('tarifs')->latest()->get();
         return view('admin.lapangan.index', compact('lapangan'));
     }
 
@@ -25,7 +26,7 @@ class LapanganController extends Controller
     public function store(StoreLapanganRequest $request)
     {
         $data = $request->validated();
-        $data['aktif'] = $request->has('aktif') ? true : false;
+        $data['aktif'] = $request->boolean('aktif');
 
         if ($request->hasFile('foto')) {
             $path = $request->file('foto')->store('lapangan', 'public');
@@ -47,7 +48,7 @@ class LapanganController extends Controller
     public function update(StoreLapanganRequest $request, Lapangan $lapangan)
     {
         $data = $request->validated();
-        $data['aktif'] = $request->has('aktif') ? true : false;
+        $data['aktif'] = $request->boolean('aktif');
 
         if ($request->hasFile('foto')) {
             if ($lapangan->foto && Storage::disk('public')->exists($lapangan->foto)) {
@@ -75,6 +76,53 @@ class LapanganController extends Controller
         $this->invalidateCatalogCache();
 
         return redirect()->route('admin.lapangan.index')->with('success', 'Lapangan berhasil dihapus.');
+    }
+
+    /**
+     * Halaman Kelola Tarif Dinamis (Peak / Weekend) untuk Lapangan
+     */
+    public function tarifsIndex(Lapangan $lapangan)
+    {
+        $tarifs = $lapangan->tarifs()->latest()->get();
+        return view('admin.lapangan.tarifs', compact('lapangan', 'tarifs'));
+    }
+
+    /**
+     * Simpan Aturan Tarif Dinamis Baru
+     */
+    public function tarifsStore(Request $request, Lapangan $lapangan)
+    {
+        $request->validate([
+            'label' => 'nullable|string|max:100',
+            'tipe_hari' => 'required|in:weekday,weekend,all',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i',
+            'harga' => 'required|integer|min:1000',
+        ]);
+
+        LapanganTarif::create([
+            'lapangan_id' => $lapangan->id,
+            'label' => $request->label ?? 'Tarif Khusus',
+            'tipe_hari' => $request->tipe_hari,
+            'jam_mulai' => $request->jam_mulai . ':00',
+            'jam_selesai' => $request->jam_selesai . ':00',
+            'harga' => $request->harga,
+            'aktif' => true,
+        ]);
+
+        $this->invalidateCatalogCache();
+
+        return redirect()->back()->with('success', 'Skema tarif khusus berhasil ditambahkan.');
+    }
+
+    /**
+     * Hapus Skema Tarif Dinamis
+     */
+    public function tarifsDestroy(LapanganTarif $tarif)
+    {
+        $tarif->delete();
+        $this->invalidateCatalogCache();
+        return redirect()->back()->with('success', 'Skema tarif berhasil dihapus.');
     }
 
     /**

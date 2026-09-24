@@ -11,25 +11,80 @@ use Illuminate\Support\Facades\Cache;
 class PublicController extends Controller
 {
     /**
-     * Tampilkan halaman utama dengan daftar lapangan aktif dan in-memory caching.
+     * Halaman Landing Page (Edukasi, Penjelasan Sistem, Keunggulan & CTA).
+     */
+    public function landing()
+    {
+        $totalLapangan = Cache::remember('landing_total_lapangan', 300, function () {
+            return Lapangan::aktif()->count();
+        });
+
+        // Contoh lapangan unggulan untuk preview hero
+        $featuredLapangan = Cache::remember('landing_featured_lapangan', 300, function () {
+            return Lapangan::aktif()->first();
+        });
+
+        return view('public.landing', compact('totalLapangan', 'featuredLapangan'));
+    }
+
+    /**
+     * Halaman Khusus Katalog & Pemesanan Lapangan (Terpisah dari Landing Page).
+     * Dilengkapi filter pencarian Tipe, Tanggal Main, dan Jam Kosong.
+     */
+    public function catalog(Request $request)
+    {
+        $tipeAktif = $request->get('tipe', 'semua');
+        $search = $request->get('q');
+        $filterTanggal = $request->get('tanggal');
+        $filterJam = $request->get('jam');
+
+        $query = Lapangan::aktif()->with('tarifs');
+
+        if ($tipeAktif !== 'semua') {
+            $query->where('tipe', $tipeAktif);
+        }
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                  ->orWhere('alamat', 'like', "%{$search}%")
+                  ->orWhere('deskripsi', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter berdasarkan tanggal dan/atau jam ketersediaan slot kosong
+        if (!empty($filterTanggal) || !empty($filterJam)) {
+            $query->whereHas('jadwalSlots', function ($slotQuery) use ($filterTanggal, $filterJam) {
+                $slotQuery->where('tersedia', true);
+
+                if (!empty($filterTanggal)) {
+                    $slotQuery->whereDate('tanggal', $filterTanggal);
+                }
+
+                if (!empty($filterJam)) {
+                    $slotQuery->whereTime('jam_mulai', '<=', $filterJam)
+                              ->whereTime('jam_selesai', '>', $filterJam);
+                }
+            });
+        }
+
+        $lapangan = $query->latest()->get();
+
+        return view('public.catalog', compact(
+            'lapangan', 
+            'tipeAktif', 
+            'search', 
+            'filterTanggal', 
+            'filterJam'
+        ));
+    }
+
+    /**
+     * Alias method index untuk backward compatibility jika diperlukan
      */
     public function index(Request $request)
     {
-        $tipeAktif = $request->get('tipe', 'semua');
-        $cacheKey = 'catalog_lapangan_' . $tipeAktif;
-
-        // In-Memory Caching (TTL: 5 menit / 300 detik) untuk respon instan
-        $lapangan = Cache::remember($cacheKey, 300, function () use ($request) {
-            $query = Lapangan::aktif();
-
-            if ($request->filled('tipe')) {
-                $query->where('tipe', $request->tipe);
-            }
-
-            return $query->latest()->get();
-        });
-
-        return view('public.index', compact('lapangan', 'tipeAktif'));
+        return $this->landing();
     }
 
     /**
@@ -37,7 +92,7 @@ class PublicController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $lapangan = Lapangan::aktif()->findOrFail($id);
+        $lapangan = Lapangan::aktif()->with('tarifs')->findOrFail($id);
 
         // Tanggal yang dipilih (default hari ini)
         $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));

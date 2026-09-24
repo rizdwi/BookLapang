@@ -67,22 +67,29 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex justify-end items-center gap-2">
-                                    {{-- Tombol Kelola Jadwal yang sebelumnya hilang --}}
+                                    {{-- Tombol Tarif Khusus (Peak/Weekend) --}}
+                                    <a href="{{ route('admin.lapangan.tarifs.index', $lap->id) }}" 
+                                       class="px-2.5 py-1 text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200 hover:bg-amber-100 rounded-lg transition-colors"
+                                       title="Atur Tarif Dinamis / Jam Sibuk">
+                                        Tarif Khusus
+                                    </a>
+
+                                    {{-- Tombol Kelola Jadwal --}}
                                     <a href="{{ route('admin.jadwal.index', ['lapangan_id' => $lap->id]) }}" 
-                                       class="px-2.5 py-1 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 hover:bg-teal-100 rounded transition-colors"
+                                       class="px-2.5 py-1 text-xs font-semibold text-teal-800 bg-teal-50 border border-teal-200 hover:bg-teal-100 rounded-lg transition-colors"
                                        title="Atur Slot Jam Lapangan Ini">
                                         Jadwal Slot
                                     </a>
 
                                     <a href="{{ route('admin.lapangan.edit', $lap->id) }}" 
-                                       class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded transition-colors">
+                                       class="px-2.5 py-1 text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg transition-colors">
                                         Edit
                                     </a>
 
                                     <form action="{{ route('admin.lapangan.destroy', $lap->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus lapangan ini?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 rounded transition-colors">
+                                        <button type="submit" class="px-2.5 py-1 text-xs font-semibold text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 rounded-lg transition-colors">
                                             Hapus
                                         </button>
                                     </form>

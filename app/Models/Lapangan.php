@@ -50,4 +50,12 @@ class Lapangan extends Model
     {
         return $this->hasMany(Booking::class);
     }
+
+    /**
+     * Get the dynamic tariffs for the lapangan.
+     */
+    public function tarifs(): HasMany
+    {
+        return $this->hasMany(LapanganTarif::class);
+    }
 }

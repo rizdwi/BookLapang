@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        html { scroll-behavior: smooth; }
         body { font-family: system-ui, -apple-system, sans-serif; }
     </style>
 </head>
@@ -22,22 +23,31 @@
                     
                     <div class="hidden md:flex md:items-center md:space-x-1">
                         <a href="{{ route('home') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('home') ? 'bg-white/15 text-teal-300' : '' }}">
-                            Cari Lapangan
+                            Beranda
+                        </a>
+                        <a href="{{ route('lapangan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('lapangan.*') ? 'bg-white/15 text-teal-300' : '' }}">
+                            Pesan Lapangan
                         </a>
                         
                         @auth
                             @if(auth()->user()->isAdmin())
                                 <a href="{{ route('admin.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('admin.dashboard') ? 'bg-white/15 text-teal-300' : '' }}">
-                                    Dasbor Admin
+                                    Dasbor
+                                </a>
+                                <a href="{{ route('admin.timetable') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('admin.timetable') ? 'bg-white/15 text-teal-300' : '' }}">
+                                    Kalender Kasir
+                                </a>
+                                <a href="{{ route('admin.checkin.view') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('admin.checkin.*') ? 'bg-white/15 text-teal-300' : '' }}">
+                                    Check-In
                                 </a>
                                 <a href="{{ route('admin.lapangan.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('admin.lapangan.*') ? 'bg-white/15 text-teal-300' : '' }}">
-                                    Kelola Lapangan
+                                    Lapangan
                                 </a>
                                 <a href="{{ route('admin.jadwal.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('admin.jadwal.*') ? 'bg-white/15 text-teal-300' : '' }}">
-                                    Kelola Jadwal
+                                    Jadwal
                                 </a>
                                 <a href="{{ route('admin.booking.index') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('admin.booking.*') ? 'bg-white/15 text-teal-300' : '' }}">
-                                    Data Pesanan
+                                    Pesanan
                                 </a>
                             @else
                                 <a href="{{ route('customer.dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10 {{ request()->routeIs('customer.dashboard') ? 'bg-white/15 text-teal-300' : '' }}">
@@ -86,10 +96,13 @@
 
         <div x-show="mobileMenuOpen" class="md:hidden border-t border-white/10" style="display: none;">
             <div class="px-3 pt-2 pb-3 space-y-1">
-                <a href="{{ route('home') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Cari Lapangan</a>
+                <a href="{{ route('home') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Beranda</a>
+                <a href="{{ route('lapangan.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Pesan Lapangan</a>
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Dasbor Admin</a>
+                        <a href="{{ route('admin.dashboard') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Dasbor</a>
+                        <a href="{{ route('admin.timetable') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Kalender Kasir</a>
+                        <a href="{{ route('admin.checkin.view') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Check-In Scanner</a>
                         <a href="{{ route('admin.lapangan.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Kelola Lapangan</a>
                         <a href="{{ route('admin.jadwal.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Kelola Jadwal</a>
                         <a href="{{ route('admin.booking.index') }}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-white/10">Data Pesanan</a>
@@ -111,10 +124,19 @@
         </div>
     </nav>
 
-    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        <x-flash-message />
-        @yield('content')
-    </main>
+    @hasSection('full_width')
+        <main class="flex-grow w-full">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+                <x-flash-message />
+            </div>
+            @yield('content')
+        </main>
+    @else
+        <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+            <x-flash-message />
+            @yield('content')
+        </main>
+    @endif
 
     <footer class="bg-[#1e3a5f] text-white py-8 mt-auto border-t border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-300">

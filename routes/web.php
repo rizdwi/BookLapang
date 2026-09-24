@@ -10,7 +10,8 @@ use Illuminate\Support\Facades\Route;
 
 // Halaman Publik dengan Rate Limiter (60 request/menit untuk mencegah DoS/Scraping)
 Route::middleware(['throttle:60,1'])->group(function () {
-    Route::get('/', [PublicController::class, 'index'])->name('home');
+    Route::get('/', [PublicController::class, 'landing'])->name('home');
+    Route::get('/lapangan', [PublicController::class, 'catalog'])->name('lapangan.index');
     Route::get('/lapangan/{id}', [PublicController::class, 'show'])->name('lapangan.show');
 });
 
@@ -28,15 +29,20 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('customer.dashboard');
     })->name('booking.history');
     
+    Route::get('/booking/{booking}/ticket', [BookingController::class, 'ticket'])->name('booking.ticket');
     Route::post('/booking/{booking}/cancel', [BookingController::class, 'cancel'])->name('booking.cancel');
 });
 
 // Jalur Pengelola (Admin)
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/timetable', [DashboardController::class, 'timetable'])->name('timetable');
     
-    // Kelola Lapangan
+    // Kelola Lapangan & Tarif Khusus (Peak/Weekend)
     Route::resource('lapangan', LapanganController::class);
+    Route::get('/lapangan/{lapangan}/tarifs', [LapanganController::class, 'tarifsIndex'])->name('lapangan.tarifs.index');
+    Route::post('/lapangan/{lapangan}/tarifs', [LapanganController::class, 'tarifsStore'])->name('lapangan.tarifs.store');
+    Route::delete('/tarifs/{tarif}', [LapanganController::class, 'tarifsDestroy'])->name('tarifs.destroy');
     
     // Kelola Jadwal Slot
     Route::get('/jadwal', [JadwalController::class, 'all'])->name('jadwal.index');
@@ -46,7 +52,10 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/jadwal/{slot}/toggle', [JadwalController::class, 'toggle'])->name('jadwal.toggle');
     Route::delete('/jadwal/{slot}', [JadwalController::class, 'destroy'])->name('jadwal.destroy');
 
-    // Kelola Pemesanan (Booking)
+    // Kelola Pemesanan & Kasir (Check-in Scanner & Laporan Keuangan)
+    Route::get('/booking/export', [AdminBookingController::class, 'export'])->name('booking.export');
+    Route::get('/checkin', [AdminBookingController::class, 'checkInView'])->name('checkin.view');
+    Route::post('/checkin', [AdminBookingController::class, 'checkInProcess'])->name('checkin.process');
     Route::get('/booking', [AdminBookingController::class, 'index'])->name('booking.index');
     Route::patch('/booking/{booking}/status', [AdminBookingController::class, 'updateStatus'])->name('booking.update-status');
     Route::patch('/booking/{booking}', [AdminBookingController::class, 'updateStatus'])->name('booking.update');
