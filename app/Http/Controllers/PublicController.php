@@ -34,6 +34,7 @@ class PublicController extends Controller
     public function catalog(Request $request)
     {
         $tipeAktif = $request->get('tipe', 'semua');
+        $lokasiAktif = $request->get('lokasi', 'semua');
         $search = $request->get('q');
         $filterTanggal = $request->get('tanggal');
         $filterJam = $request->get('jam');
@@ -42,6 +43,10 @@ class PublicController extends Controller
 
         if ($tipeAktif !== 'semua') {
             $query->where('tipe', $tipeAktif);
+        }
+
+        if ($lokasiAktif !== 'semua' && !empty($lokasiAktif)) {
+            $query->where('alamat', 'like', "%{$lokasiAktif}%");
         }
 
         if (!empty($search)) {
@@ -73,6 +78,7 @@ class PublicController extends Controller
         return view('public.catalog', compact(
             'lapangan', 
             'tipeAktif', 
+            'lokasiAktif',
             'search', 
             'filterTanggal', 
             'filterJam'

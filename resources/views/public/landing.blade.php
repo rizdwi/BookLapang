@@ -267,7 +267,8 @@
                     ⚽
                 </div>
                 <span class="font-extrabold text-[#1e3a5f] text-base group-hover:text-teal-700 block">Futsal</span>
-                <span class="text-xs text-gray-500 mt-0.5 block">Indoor & Vinyl</span>
+                <span class="text-xs text-[#0d9488] font-bold mt-0.5 block">5 Lokasi Venue</span>
+                <span class="text-[11px] text-gray-500 mt-0.5 block">Indoor & Vinyl</span>
             </a>
 
             {{-- Badminton --}}
@@ -277,7 +278,8 @@
                     🏸
                 </div>
                 <span class="font-extrabold text-[#1e3a5f] text-base group-hover:text-teal-700 block">Badminton</span>
-                <span class="text-xs text-gray-500 mt-0.5 block">Karpet BWF</span>
+                <span class="text-xs text-[#0d9488] font-bold mt-0.5 block">5 Lokasi Venue</span>
+                <span class="text-[11px] text-gray-500 mt-0.5 block">Karpet BWF</span>
             </a>
 
             {{-- Basket --}}
@@ -287,7 +289,8 @@
                     🏀
                 </div>
                 <span class="font-extrabold text-[#1e3a5f] text-base group-hover:text-teal-700 block">Basket</span>
-                <span class="text-xs text-gray-500 mt-0.5 block">Lantai Kayu Maple</span>
+                <span class="text-xs text-[#0d9488] font-bold mt-0.5 block">5 Lokasi Venue</span>
+                <span class="text-[11px] text-gray-500 mt-0.5 block">Kayu Maple & FIBA</span>
             </a>
 
             {{-- Tenis --}}
@@ -297,7 +300,8 @@
                     🎾
                 </div>
                 <span class="font-extrabold text-[#1e3a5f] text-base group-hover:text-teal-700 block">Tenis</span>
-                <span class="text-xs text-gray-500 mt-0.5 block">Hard Court</span>
+                <span class="text-xs text-[#0d9488] font-bold mt-0.5 block">5 Lokasi Venue</span>
+                <span class="text-[11px] text-gray-500 mt-0.5 block">Hard & Cushion Court</span>
             </a>
 
             {{-- Voli --}}
@@ -307,7 +311,8 @@
                     🏐
                 </div>
                 <span class="font-extrabold text-[#1e3a5f] text-base group-hover:text-teal-700 block">Bola Voli</span>
-                <span class="text-xs text-gray-500 mt-0.5 block">Taraflex Anti-Slip</span>
+                <span class="text-xs text-[#0d9488] font-bold mt-0.5 block">5 Lokasi Venue</span>
+                <span class="text-[11px] text-gray-500 mt-0.5 block">Taraflex Anti-Slip</span>
             </a>
         </div>
     </div>

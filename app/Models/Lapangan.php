@@ -29,7 +29,24 @@ class Lapangan extends Model
 
     protected $appends = [
         'foto_url',
+        'wilayah',
     ];
+
+    /**
+     * Get wilayah / region for location filtering & badges
+     */
+    public function getWilayahAttribute(): string
+    {
+        if (empty($this->alamat)) {
+            return 'Jakarta';
+        }
+        foreach (['Jakarta Selatan', 'Jakarta Pusat', 'Jakarta Barat', 'Jakarta Timur', 'Jakarta Utara'] as $region) {
+            if (stripos($this->alamat, $region) !== false) {
+                return $region;
+            }
+        }
+        return 'Jakarta';
+    }
 
     /**
      * Get image URL with automatic fallback for local and Vercel CDN

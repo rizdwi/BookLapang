@@ -22,6 +22,9 @@
         @if(request('tipe') && request('tipe') !== 'semua')
             <input type="hidden" name="tipe" value="{{ request('tipe') }}">
         @endif
+        @if(request('lokasi') && request('lokasi') !== 'semua')
+            <input type="hidden" name="lokasi" value="{{ request('lokasi') }}">
+        @endif
 
         {{-- Keyword Nama / Lokasi --}}
         <div class="lg:col-span-5">
@@ -73,7 +76,7 @@
 </div>
 
 {{-- Filter Kategori Cabang Olahraga --}}
-<div class="mb-8 flex flex-wrap items-center gap-2">
+<div class="mb-4 flex flex-wrap items-center gap-2">
     @php
         $categories = [
             'semua' => 'Semua Lapangan',
@@ -84,6 +87,7 @@
             'voli' => '🏐 Bola Voli',
         ];
         $currentType = request('tipe', 'semua');
+        $currentLokasi = request('lokasi', 'semua');
     @endphp
 
     @foreach($categories as $key => $label)
@@ -91,6 +95,9 @@
             $urlParams = [];
             if ($key !== 'semua') {
                 $urlParams['tipe'] = $key;
+            }
+            if ($currentLokasi !== 'semua') {
+                $urlParams['lokasi'] = $currentLokasi;
             }
             if (!empty($search)) {
                 $urlParams['q'] = $search;
@@ -109,6 +116,49 @@
     @endforeach
 </div>
 
+{{-- Filter Wilayah / Lokasi --}}
+<div class="mb-8 flex flex-wrap items-center gap-2">
+    <span class="text-xs font-bold uppercase tracking-wider text-gray-400 mr-1 flex items-center gap-1">
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Lokasi:
+    </span>
+    @php
+        $regions = [
+            'semua' => 'Semua Lokasi',
+            'Jakarta Selatan' => 'Jakarta Selatan',
+            'Jakarta Barat' => 'Jakarta Barat',
+            'Jakarta Pusat' => 'Jakarta Pusat',
+            'Jakarta Timur' => 'Jakarta Timur',
+            'Jakarta Utara' => 'Jakarta Utara',
+        ];
+    @endphp
+
+    @foreach($regions as $regKey => $regLabel)
+        @php
+            $regUrlParams = [];
+            if ($currentType !== 'semua') {
+                $regUrlParams['tipe'] = $currentType;
+            }
+            if ($regKey !== 'semua') {
+                $regUrlParams['lokasi'] = $regKey;
+            }
+            if (!empty($search)) {
+                $regUrlParams['q'] = $search;
+            }
+            if (!empty($filterTanggal)) {
+                $regUrlParams['tanggal'] = $filterTanggal;
+            }
+            if (!empty($filterJam)) {
+                $regUrlParams['jam'] = $filterJam;
+            }
+        @endphp
+        <a href="{{ route('lapangan.index', $regUrlParams) }}"
+           class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 {{ $currentLokasi === $regKey ? 'bg-[#0d9488] text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+            {{ $regLabel }}
+        </a>
+    @endforeach
+</div>
+
 {{-- Grid Daftar Lapangan --}}
 <div class="mb-14">
     @if(isset($lapangan) && count($lapangan) > 0)
@@ -120,10 +170,16 @@
                     <div class="relative h-52 w-full bg-gray-100 overflow-hidden">
                         <img src="{{ $lap->foto_url }}" alt="{{ $lap->nama }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
 
-                        {{-- Badge Tipe --}}
-                        <span class="absolute top-3 left-3 px-3 py-1 rounded-lg text-xs font-black uppercase tracking-wider bg-[#1e3a5f]/90 text-white backdrop-blur-sm shadow-sm">
-                            {{ ucfirst($lap->tipe) }}
-                        </span>
+                        {{-- Badges Header Foto --}}
+                        <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                            <span class="px-2.5 py-1 rounded-lg text-[11px] font-black uppercase tracking-wider bg-[#1e3a5f]/95 text-white backdrop-blur-sm shadow-sm">
+                                {{ ucfirst($lap->tipe) }}
+                            </span>
+                            <span class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white/95 text-gray-800 backdrop-blur-sm shadow-sm flex items-center gap-1">
+                                <svg class="w-3 h-3 text-[#0d9488]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
+                                {{ $lap->wilayah }}
+                            </span>
+                        </div>
 
                         {{-- Badge Live Status --}}
                         <span class="absolute top-3 right-3 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-500 text-white shadow-sm flex items-center gap-1.5">
