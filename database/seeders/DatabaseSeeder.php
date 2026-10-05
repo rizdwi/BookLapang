@@ -321,7 +321,7 @@ class DatabaseSeeder extends Seeder
             $createdLapangans[] = $lap;
         }
 
-        // 3. Generate Slot Waktu untuk 7 Hari ke Depan (Jam 08:00 s/d 22:00 = 14 slot/hari)
+        // 3. Generate Slot Waktu untuk 30 Hari ke Depan (Jam 08:00 s/d 22:00 = 14 slot/hari) — self-healing window
         $today = Carbon::today();
         $slotBatch = [];
         $now = now();
@@ -330,7 +330,7 @@ class DatabaseSeeder extends Seeder
             $defaultPrice = $lap->harga_per_jam;
             $peakTarif = LapanganTarif::where('lapangan_id', $lap->id)->first();
 
-            for ($d = 0; $d < 7; $d++) {
+            for ($d = 0; $d < 30; $d++) {
                 $tanggal = (clone $today)->addDays($d)->format('Y-m-d');
 
                 for ($h = 8; $h < 22; $h++) {

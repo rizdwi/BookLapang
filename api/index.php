@@ -18,12 +18,15 @@ foreach ($dirs as $dir) {
     }
 }
 
-// 2. Salin SQLite database dengan data lapangan ke /tmp
+// 2. Salin SQLite database dengan data lapangan ke /tmp (selalu segar jika source lebih baru)
 $sourceDb = __DIR__ . '/../database/database.sqlite';
 $targetDb = $tmp . '/database.sqlite';
 
-if (file_exists($sourceDb) && (!file_exists($targetDb) || filesize($targetDb) === 0)) {
-    copy($sourceDb, $targetDb);
+if (file_exists($sourceDb)) {
+    $needsCopy = !file_exists($targetDb) || filesize($targetDb) === 0 || filemtime($sourceDb) > filemtime($targetDb);
+    if ($needsCopy) {
+        @copy($sourceDb, $targetDb);
+    }
 }
 
 // 3. Konfigurasi runtime environment overrides untuk Vercel

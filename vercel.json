@@ -5,6 +5,10 @@
     "api/index.php": {
       "runtime": "vercel-php@0.7.3",
       "includeFiles": "database/**"
+    },
+    "api/cron.php": {
+      "runtime": "vercel-php@0.7.3",
+      "includeFiles": "database/**"
     }
   },
   "routes": [
@@ -19,6 +23,10 @@
       "continue": true
     },
     {
+      "src": "/api/cron",
+      "dest": "/api/cron.php"
+    },
+    {
       "src": "/images/(.*)",
       "dest": "/public/images/$1"
     },
@@ -29,6 +37,12 @@
     {
       "src": "/(.*)",
       "dest": "/api/index.php"
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron",
+      "schedule": "0 * * * *"
     }
   ],
   "env": {
