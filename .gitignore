@@ -19,3 +19,5 @@ Homestead.yaml
 /.vscode
 npm-debug.log
 yarn-error.log
+
+.vercel
