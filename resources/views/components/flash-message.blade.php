@@ -1,33 +1,62 @@
 @if (session('success'))
-    <div class="rounded-md bg-green-50 p-4 mb-6 border border-green-200">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+    <div x-data="{ show: true }" x-show="show" x-transition.duration.300ms class="rounded-2xl bg-emerald-50/90 border border-emerald-200/80 p-4 mb-6 shadow-sm flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
                 </svg>
             </div>
-            <div class="ml-3">
-                <p class="text-sm font-medium text-green-800">
+            <div>
+                <p class="text-xs font-bold text-emerald-900 uppercase tracking-wider">Berhasil</p>
+                <p class="text-sm font-semibold text-emerald-950 mt-0.5">
                     {{ session('success') }}
                 </p>
             </div>
         </div>
+        <button type="button" @click="show = false" class="text-emerald-700 hover:text-emerald-900 p-1 rounded-lg hover:bg-emerald-100/60 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
 @endif
 
 @if (session('error'))
-    <div class="rounded-md bg-red-50 p-4 mb-6 border border-red-200">
-        <div class="flex">
-            <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+    <div x-data="{ show: true }" x-show="show" x-transition.duration.300ms class="rounded-2xl bg-rose-50/90 border border-rose-200/80 p-4 mb-6 shadow-sm flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
                 </svg>
             </div>
-            <div class="ml-3">
-                <p class="text-sm font-medium text-red-800">
+            <div>
+                <p class="text-xs font-bold text-rose-900 uppercase tracking-wider">Perhatian</p>
+                <p class="text-sm font-semibold text-rose-950 mt-0.5">
                     {{ session('error') }}
                 </p>
             </div>
         </div>
+        <button type="button" @click="show = false" class="text-rose-700 hover:text-rose-900 p-1 rounded-lg hover:bg-rose-100/60 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+    </div>
+@endif
+
+@if (session('info'))
+    <div x-data="{ show: true }" x-show="show" x-transition.duration.300ms class="rounded-2xl bg-sky-50/90 border border-sky-200/80 p-4 mb-6 shadow-sm flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-sky-500 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-sky-900 uppercase tracking-wider">Informasi</p>
+                <p class="text-sm font-semibold text-sky-950 mt-0.5">
+                    {{ session('info') }}
+                </p>
+            </div>
+        </div>
+        <button type="button" @click="show = false" class="text-sky-700 hover:text-sky-900 p-1 rounded-lg hover:bg-sky-100/60 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
     </div>
 @endif

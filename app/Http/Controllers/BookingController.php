@@ -46,6 +46,15 @@ class BookingController extends Controller
 
         $lapangan = $slots->first()->lapangan;
 
+        // Validasi: seluruh slot harus di lapangan yang sama & tanggal yang sama
+        if ($slots->pluck('lapangan_id')->unique()->count() > 1) {
+            return redirect()->route('lapangan.index')->with('error', 'Semua slot yang dipilih harus berada di lapangan yang sama.');
+        }
+
+        if ($slots->pluck('tanggal')->unique()->count() > 1) {
+            return redirect()->route('lapangan.show', $lapangan->id)->with('error', 'Semua slot yang dipilih harus pada tanggal yang sama.');
+        }
+
         // Cek ketersediaan setiap slot
         foreach ($slots as $slot) {
             if (!$slot->tersedia) {
@@ -54,7 +63,10 @@ class BookingController extends Controller
             }
         }
 
-        // Aturan Bisnis: Max 2 pesanan pending — selesaikan pembayaran dulu
+        // Auto-cancel pesanan pending yang sudah kadaluarsa milik user ini agar tidak menghalangi booking baru
+        $this->expireUserPendingBookings(Auth::id());
+
+        // Aturan Bisnis: Max 2 pesanan pending aktif — selesaikan pembayaran dulu
         $pendingCount = Booking::where('user_id', Auth::id())
             ->where('status', 'pending')
             ->count();
@@ -94,6 +106,9 @@ class BookingController extends Controller
 
             $lapangan = Lapangan::findOrFail($request->lapangan_id);
 
+            // Auto-cancel pesanan pending yang sudah kadaluarsa milik user ini
+            $this->expireUserPendingBookings(Auth::id());
+
             // Validasi ulang: max 2 pesanan pending total
             $pendingCount = Booking::where('user_id', Auth::id())
                 ->where('status', 'pending')
@@ -116,6 +131,13 @@ class BookingController extends Controller
                 DB::rollBack();
                 return redirect()->route('lapangan.show', $lapangan->id)
                     ->with('error', 'Sebagian slot jadwal tidak ditemukan atau tidak valid.');
+            }
+
+            // Validasi tanggal seluruh slot harus sama
+            if ($slots->pluck('tanggal')->unique()->count() > 1) {
+                DB::rollBack();
+                return redirect()->route('lapangan.show', $lapangan->id)
+                    ->with('error', 'Semua slot jadwal yang dipilih harus pada tanggal yang sama.');
             }
 
             // Cek ketersediaan seluruh slot
@@ -279,6 +301,36 @@ class BookingController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()->with('error', 'Gagal membatalkan pesanan.');
+        }
+    }
+
+    /**
+     * Auto-cancel pesanan pending yang sudah kadaluarsa milik user
+     */
+    private function expireUserPendingBookings(int $userId): void
+    {
+        $expiredBookings = Booking::with('bookingSlots')
+            ->where('user_id', $userId)
+            ->where('status', 'pending')
+            ->where(function ($q) {
+                $q->where(function ($sq) {
+                    $sq->whereNotNull('expires_at')->where('expires_at', '<', now());
+                })->orWhere(function ($sq) {
+                    $sq->whereNull('expires_at')->where('created_at', '<', now()->subMinutes(15));
+                });
+            })
+            ->get();
+
+        foreach ($expiredBookings as $b) {
+            DB::transaction(function () use ($b) {
+                $b->update(['status' => 'cancelled']);
+                if ($b->jadwal_slot_id) {
+                    JadwalSlot::where('id', $b->jadwal_slot_id)->update(['tersedia' => true]);
+                }
+                foreach ($b->bookingSlots as $s) {
+                    JadwalSlot::where('id', $s->jadwal_slot_id)->update(['tersedia' => true]);
+                }
+            });
         }
     }
 }

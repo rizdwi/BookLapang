@@ -200,6 +200,20 @@ class JadwalController extends Controller
      */
     public function destroy(JadwalSlot $slot)
     {
+        // Cegah penghapusan jika slot sedang terikat pemesanan aktif
+        $isBooked = \Illuminate\Support\Facades\DB::table('booking_slots')
+            ->join('bookings', 'booking_slots.booking_id', '=', 'bookings.id')
+            ->where('booking_slots.jadwal_slot_id', $slot->id)
+            ->whereIn('bookings.status', ['pending', 'confirmed', 'done'])
+            ->exists() ||
+            \App\Models\Booking::where('jadwal_slot_id', $slot->id)
+                ->whereIn('status', ['pending', 'confirmed', 'done'])
+                ->exists();
+
+        if ($isBooked) {
+            return redirect()->back()->with('error', 'Tidak dapat menghapus slot yang sedang terikat pesanan aktif (pending/confirmed/done).');
+        }
+
         $slot->delete();
         return redirect()->back()->with('success', 'Jadwal slot berhasil dihapus.');
     }

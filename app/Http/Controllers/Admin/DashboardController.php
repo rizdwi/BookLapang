@@ -46,7 +46,12 @@ class DashboardController extends Controller
      */
     public function timetable(Request $request)
     {
-        $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
+        $rawDate = $request->get('tanggal');
+        try {
+            $selectedDate = $rawDate ? Carbon::parse($rawDate)->format('Y-m-d') : Carbon::today()->format('Y-m-d');
+        } catch (\Throwable $e) {
+            $selectedDate = Carbon::today()->format('Y-m-d');
+        }
         $tipeFilter = $request->get('tipe');
 
         $lapanganQuery = Lapangan::aktif()->with(['jadwalSlots' => function ($q) use ($selectedDate) {

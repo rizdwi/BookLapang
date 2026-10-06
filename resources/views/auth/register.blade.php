@@ -1,57 +1,95 @@
 @extends('layouts.guest')
 
 @section('content')
-<form class="mt-8 space-y-6" action="{{ route('register') }}" method="POST">
+<div class="mb-6">
+    <h1 class="text-2xl font-black tracking-tight text-white">Daftar Akun Baru</h1>
+    <p class="text-xs text-slate-400 mt-1">Buat akun untuk memesan lapangan dan simpan riwayat booking.</p>
+</div>
+
+<form class="space-y-4" action="{{ route('register') }}" method="POST">
     @csrf
     
-    <div class="rounded-md shadow-sm space-y-4">
-        <div>
-            <label for="name" class="block text-sm font-medium text-[#1a1a1a]">Nama Lengkap</label>
-            <input id="name" name="name" type="text" autocomplete="name" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="Nama Anda" value="{{ old('name') }}">
-            @error('name')
-                <p class="mt-1 text-sm text-[#dc2626]">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label for="email" class="block text-sm font-medium text-[#1a1a1a]">Alamat Email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="email@contoh.com" value="{{ old('email') }}">
-            @error('email')
-                <p class="mt-1 text-sm text-[#dc2626]">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label for="phone" class="block text-sm font-medium text-[#1a1a1a]">Nomor HP</label>
-            <input id="phone" name="phone" type="text" autocomplete="tel" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="08xxxxxxxxxx" value="{{ old('phone') }}">
-            @error('phone')
-                <p class="mt-1 text-sm text-[#dc2626]">{{ $message }}</p>
-            @enderror
-        </div>
-        
-        <div>
-            <label for="password" class="block text-sm font-medium text-[#1a1a1a]">Kata Sandi</label>
-            <input id="password" name="password" type="password" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="Minimal 8 karakter">
-            @error('password')
-                <p class="mt-1 text-sm text-[#dc2626]">{{ $message }}</p>
-            @enderror
-        </div>
-
-        <div>
-            <label for="password_confirmation" class="block text-sm font-medium text-[#1a1a1a]">Konfirmasi Kata Sandi</label>
-            <input id="password_confirmation" name="password_confirmation" type="password" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="Ketik ulang kata sandi">
-        </div>
+    <div>
+        <label for="name" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Nama Lengkap</label>
+        <input id="name" 
+               name="name" 
+               type="text" 
+               autocomplete="name" 
+               required 
+               class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+               placeholder="Nama Anda" 
+               value="{{ old('name') }}">
+        @error('name')
+            <p class="mt-1.5 text-xs font-semibold text-rose-400">{{ $message }}</p>
+        @enderror
     </div>
 
     <div>
-        <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#0d9488] hover:bg-[#0f766e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0d9488]">
-            Daftar Sekarang
+        <label for="email" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Alamat Email</label>
+        <input id="email" 
+               name="email" 
+               type="email" 
+               autocomplete="email" 
+               required 
+               class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+               placeholder="nama@email.com" 
+               value="{{ old('email') }}">
+        @error('email')
+            <p class="mt-1.5 text-xs font-semibold text-rose-400">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <div>
+        <label for="phone" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Nomor WhatsApp / HP</label>
+        <input id="phone" 
+               name="phone" 
+               type="text" 
+               autocomplete="tel" 
+               required 
+               class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+               placeholder="081234567890" 
+               value="{{ old('phone') }}">
+        @error('phone')
+            <p class="mt-1.5 text-xs font-semibold text-rose-400">{{ $message }}</p>
+        @enderror
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div>
+            <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Kata Sandi</label>
+            <input id="password" 
+                   name="password" 
+                   type="password" 
+                   required 
+                   class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+                   placeholder="Min 8 karakter">
+            @error('password')
+                <p class="mt-1.5 text-xs font-semibold text-rose-400">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <div>
+            <label for="password_confirmation" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Konfirmasi</label>
+            <input id="password_confirmation" 
+                   name="password_confirmation" 
+                   type="password" 
+                   required 
+                   class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+                   placeholder="Ulangi sandi">
+        </div>
+    </div>
+
+    <div class="pt-2">
+        <button type="submit" 
+                class="w-full py-3 px-4 rounded-xl text-sm font-extrabold text-white bg-pitch-600 hover:bg-pitch-500 shadow-lg shadow-pitch-600/30 transition-all transform hover:-translate-y-0.5 focus:outline-hidden focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-950 cursor-pointer">
+            Buat Akun Sekarang
         </button>
     </div>
     
-    <div class="text-sm text-center">
-        <a href="{{ route('login') }}" class="font-medium text-[#0d9488] hover:text-[#0f766e]">
-            Sudah punya akun? Masuk di sini
+    <div class="text-xs text-center text-slate-400 pt-2 border-t border-slate-800/80">
+        Sudah memiliki akun? 
+        <a href="{{ route('login') }}" class="font-bold text-emerald-400 hover:text-emerald-300 ml-1 transition-colors">
+            Masuk di sini
         </a>
     </div>
 </form>

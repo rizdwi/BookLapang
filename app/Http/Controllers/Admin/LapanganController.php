@@ -67,6 +67,14 @@ class LapanganController extends Controller
 
     public function destroy(Lapangan $lapangan)
     {
+        $hasActiveBookings = \App\Models\Booking::where('lapangan_id', $lapangan->id)
+            ->whereIn('status', ['pending', 'confirmed'])
+            ->exists();
+
+        if ($hasActiveBookings) {
+            return redirect()->back()->with('error', 'Tidak dapat menghapus lapangan yang memiliki reservasi aktif (pending/confirmed). Selesaikan atau batalkan reservasi terlebih dahulu.');
+        }
+
         if ($lapangan->foto && Storage::disk('public')->exists($lapangan->foto)) {
             Storage::disk('public')->delete($lapangan->foto);
         }
@@ -96,7 +104,7 @@ class LapanganController extends Controller
             'label' => 'nullable|string|max:100',
             'tipe_hari' => 'required|in:weekday,weekend,all',
             'jam_mulai' => 'required|date_format:H:i',
-            'jam_selesai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
             'harga' => 'required|integer|min:1000',
         ]);
 

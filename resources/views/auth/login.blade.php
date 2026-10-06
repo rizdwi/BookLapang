@@ -1,45 +1,68 @@
 @extends('layouts.guest')
 
 @section('content')
-<form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
+<div class="mb-6">
+    <h1 class="text-2xl font-black tracking-tight text-white">Selamat Datang</h1>
+    <p class="text-xs text-slate-400 mt-1">Masuk untuk mengelola pesanan atau booking lapangan baru.</p>
+</div>
+
+<form class="space-y-5" action="{{ route('login') }}" method="POST">
     @csrf
     
-    <div class="rounded-md shadow-sm space-y-4">
+    <div class="space-y-4">
         <div>
-            <label for="email" class="block text-sm font-medium text-[#1a1a1a]">Alamat Email</label>
-            <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="email@contoh.com" value="{{ old('email') }}">
+            <label for="email" class="block text-xs font-bold uppercase tracking-wider text-slate-300 mb-1.5">Alamat Email</label>
+            <input id="email" 
+                   name="email" 
+                   type="email" 
+                   autocomplete="email" 
+                   required 
+                   class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+                   placeholder="nama@email.com" 
+                   value="{{ old('email') }}">
             @error('email')
-                <p class="mt-1 text-sm text-[#dc2626]">{{ $message }}</p>
+                <p class="mt-1.5 text-xs font-semibold text-rose-400">{{ $message }}</p>
             @enderror
         </div>
         
         <div>
-            <label for="password" class="block text-sm font-medium text-[#1a1a1a]">Kata Sandi</label>
-            <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#0d9488] focus:border-[#0d9488] focus:z-10 sm:text-sm mt-1" placeholder="••••••••">
+            <div class="flex items-center justify-between mb-1.5">
+                <label for="password" class="block text-xs font-bold uppercase tracking-wider text-slate-300">Kata Sandi</label>
+            </div>
+            <input id="password" 
+                   name="password" 
+                   type="password" 
+                   autocomplete="current-password" 
+                   required 
+                   class="w-full bg-slate-900/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-hidden focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors shadow-xs" 
+                   placeholder="••••••••">
             @error('password')
-                <p class="mt-1 text-sm text-[#dc2626]">{{ $message }}</p>
+                <p class="mt-1.5 text-xs font-semibold text-rose-400">{{ $message }}</p>
             @enderror
         </div>
     </div>
 
-    <div class="flex items-center justify-between">
-        <div class="flex items-center">
-            <input id="remember_me" name="remember" type="checkbox" class="h-4 w-4 text-[#0d9488] focus:ring-[#0d9488] border-gray-300 rounded">
-            <label for="remember_me" class="ml-2 block text-sm text-[#1a1a1a]">
-                Ingat saya
-            </label>
-        </div>
+    <div class="flex items-center justify-between pt-1">
+        <label class="flex items-center gap-2 cursor-pointer select-none">
+            <input id="remember_me" 
+                   name="remember" 
+                   type="checkbox" 
+                   class="h-4 w-4 rounded-md bg-slate-900 border-slate-700 text-pitch-600 focus:ring-pitch-500 focus:ring-offset-slate-950">
+            <span class="text-xs font-medium text-slate-400">Ingat saya di perangkat ini</span>
+        </label>
     </div>
 
     <div>
-        <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#0d9488] hover:bg-[#0f766e] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0d9488]">
-            Masuk
+        <button type="submit" 
+                class="w-full py-3 px-4 rounded-xl text-sm font-extrabold text-white bg-pitch-600 hover:bg-pitch-500 shadow-lg shadow-pitch-600/30 transition-all transform hover:-translate-y-0.5 focus:outline-hidden focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-slate-950 cursor-pointer">
+            Masuk ke Akun
         </button>
     </div>
     
-    <div class="text-sm text-center">
-        <a href="{{ route('register') }}" class="font-medium text-[#0d9488] hover:text-[#0f766e]">
-            Belum punya akun? Daftar di sini
+    <div class="text-xs text-center text-slate-400 pt-2 border-t border-slate-800/80">
+        Belum memiliki akun? 
+        <a href="{{ route('register') }}" class="font-bold text-emerald-400 hover:text-emerald-300 ml-1 transition-colors">
+            Daftar sekarang
         </a>
     </div>
 </form>

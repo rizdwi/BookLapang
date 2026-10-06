@@ -169,10 +169,15 @@ class BookingController extends Controller
 
         if (!empty($code)) {
             $cleanCode = trim($code);
-            $foundBooking = Booking::with(['user', 'lapangan', 'bookingSlots.jadwalSlot'])
-                ->where('kode_booking', $cleanCode)
-                ->orWhere('id', str_replace(['#', 'BK-', 'bk-'], '', $cleanCode))
-                ->first();
+            $cleanId = str_replace(['#', 'BK-', 'bk-'], '', $cleanCode);
+            $query = Booking::with(['user', 'lapangan', 'bookingSlots.jadwalSlot'])
+                ->where('kode_booking', $cleanCode);
+
+            if (is_numeric($cleanId)) {
+                $query->orWhere('id', (int) $cleanId);
+            }
+
+            $foundBooking = $query->first();
         }
 
         return view('admin.booking.checkin', compact('foundBooking', 'code'));

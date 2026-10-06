@@ -36,8 +36,18 @@ class PublicController extends Controller
         $tipeAktif = $request->get('tipe', 'semua');
         $lokasiAktif = $request->get('lokasi', 'semua');
         $search = $request->get('q');
-        $filterTanggal = $request->get('tanggal');
+        $rawTanggal = $request->get('tanggal');
         $filterJam = $request->get('jam');
+
+        // Validasi input tanggal: pastikan format tanggal valid atau null jika format rusak
+        $filterTanggal = null;
+        if (!empty($rawTanggal)) {
+            try {
+                $filterTanggal = Carbon::parse($rawTanggal)->format('Y-m-d');
+            } catch (\Throwable $e) {
+                $filterTanggal = null;
+            }
+        }
 
         $query = Lapangan::aktif()->with('tarifs');
 
@@ -105,8 +115,13 @@ class PublicController extends Controller
     {
         $lapangan = Lapangan::aktif()->with('tarifs')->findOrFail($id);
 
-        // Tanggal yang dipilih (default hari ini)
-        $selectedDate = $request->get('tanggal', Carbon::today()->format('Y-m-d'));
+        // Tanggal yang dipilih dengan fallback format yang aman
+        $rawDate = $request->get('tanggal');
+        try {
+            $selectedDate = $rawDate ? Carbon::parse($rawDate)->format('Y-m-d') : Carbon::today()->format('Y-m-d');
+        } catch (\Throwable $e) {
+            $selectedDate = Carbon::today()->format('Y-m-d');
+        }
 
         // Self-healing: jika slot untuk tanggal ini belum ada, generate on-demand (tanpa menunggu seeder/cron)
         $this->ensureSlotsFor($lapangan, $selectedDate);
